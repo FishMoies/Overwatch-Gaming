@@ -426,18 +426,12 @@ const confirmJoinTeam = async () => {
       joinMessage.value = '成功加入战队！';
       isJoinError.value = false;
       
-      // 3秒后关闭模态框并刷新页面
-      setTimeout(() => {
-        closeJoinModal();
-        loadTeams(); // 重新加载战队列表
-        message.value = '已成功加入战队，正在返回用户面板...';
-        isError.value = false;
-        
-        // 2秒后返回用户面板
-        setTimeout(() => {
-          window.location.hash = 'user';
-        }, 2000);
-      }, 3000);
+      // 立即关闭模态框并刷新页面，然后返回用户面板
+      closeJoinModal();
+      loadTeams(); // 重新加载战队列表
+      message.value = '已成功加入战队，正在返回用户面板...';
+      isError.value = false;
+      window.location.hash = 'user';
     } else {
       joinMessage.value = result.message || '加入战队失败';
       isJoinError.value = true;
@@ -499,9 +493,7 @@ onMounted(() => {
   if (!currentUser) {
     message.value = '请先登录';
     isError.value = true;
-    setTimeout(() => {
-      window.location.hash = '';
-    }, 2000);
+    window.location.hash = '';
     return;
   }
   

@@ -14,6 +14,42 @@ const ROLE_OPTIONS = {
   FLEXIBLE: 'flexible' // 灵活
 };
 
+// 所有有效职责
+const ALL_VALID_ROLES = Object.values(ROLE_OPTIONS);
+
+// 验证角色数组是否有效
+const validateRoles = (roles) => {
+  if (!Array.isArray(roles)) {
+    return { valid: false, message: '职责必须是数组' };
+  }
+  
+  if (roles.length === 0) {
+    return { valid: false, message: '至少选择一个职责' };
+  }
+  
+  // 检查是否包含无效角色
+  for (const role of roles) {
+    if (!ALL_VALID_ROLES.includes(role)) {
+      return { valid: false, message: `无效的职责选项: ${role}` };
+    }
+  }
+  
+  // 检查灵活与其他职责的互斥性
+  const hasFlexible = roles.includes(ROLE_OPTIONS.FLEXIBLE);
+  const hasOtherRoles = roles.some(role => role !== ROLE_OPTIONS.FLEXIBLE);
+  
+  if (hasFlexible && hasOtherRoles) {
+    return { valid: false, message: '灵活选项不能与其他职责同时选择' };
+  }
+  
+  // 检查非灵活职责数量
+  if (!hasFlexible && roles.length > 2) {
+    return { valid: false, message: '最多只能选择2个职责' };
+  }
+  
+  return { valid: true };
+};
+
 // 用户管理工具
 export const auth = {
   // 获取所有用户
@@ -58,7 +94,7 @@ export const auth = {
       username: userData.username,
       email: userData.email,
       password: userData.password,
-      role: ROLE_OPTIONS.FLEXIBLE, // 默认职责为灵活
+      role: [ROLE_OPTIONS.FLEXIBLE], // 默认职责为灵活（使用数组）
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -79,7 +115,7 @@ export const auth = {
     const users = this.getAllUsers();
     
     // 查找用户（支持用户名或邮箱登录）
-    const user = users.find(u => 
+    const user = users.find(u =>
       u.username === username || u.email === username
     );
     
@@ -96,6 +132,8 @@ export const auth = {
       id: user.id,
       username: user.username,
       email: user.email,
+      // 确保role是数组（处理旧数据可能是字符串的情况）
+      role: Array.isArray(user.role) ? user.role : [user.role || 'flexible'],
       loggedIn: true,
       loginTime: new Date().toISOString(),
       rememberMe: rememberMe
@@ -491,8 +529,11 @@ export const auth = {
     return users.filter(user => team.memberIds.includes(user.id));
   },
 
-  // 更新用户职责
-  updateUserRole(userId, role) {
+  // 更新用户职责（支持单个角色或角色数组）
+  updateUserRole(userId, roleOrRoles) {
+    // 处理单个角色或角色数组
+    const roles = Array.isArray(roleOrRoles) ? roleOrRoles : [roleOrRoles];
+    
     const users = this.getAllUsers();
     const userIndex = users.findIndex(user => user.id === userId);
     
@@ -500,21 +541,21 @@ export const auth = {
       return { success: false, message: '用户不存在' };
     }
     
-    // 验证职责是否有效
-    const validRoles = Object.values(ROLE_OPTIONS);
-    if (!validRoles.includes(role)) {
-      return { success: false, message: '无效的职责选项' };
+    // 验证职责
+    const validation = validateRoles(roles);
+    if (!validation.valid) {
+      return { success: false, message: validation.message };
     }
     
-    // 更新用户职责
-    users[userIndex].role = role;
+    // 更新用户职责（存储为数组）
+    users[userIndex].role = roles;
     users[userIndex].updatedAt = new Date().toISOString();
     
     if (this.saveAllUsers(users)) {
       // 如果当前用户更新了自己的职责，更新会话
       const currentUser = this.getCurrentUser();
       if (currentUser && currentUser.id === userId) {
-        currentUser.role = role;
+        currentUser.role = roles;
         this.saveSession(currentUser, currentUser.rememberMe);
       }
       
@@ -522,6 +563,11 @@ export const auth = {
     } else {
       return { success: false, message: '更新职责失败' };
     }
+  },
+
+  // 更新用户职责（别名，用于明确支持多选）
+  updateUserRoles(userId, roles) {
+    return this.updateUserRole(userId, roles);
   },
 
   // 获取所有帖子
@@ -687,6 +733,7 @@ export const auth = {
           username: 'testuser',
           email: 'test@example.com',
           password: 'password123',
+          role: 'flexible', // 添加role字段
           createdAt: '2024-01-01T00:00:00.000Z',
           updatedAt: '2024-01-01T00:00:00.000Z'
         },
@@ -695,6 +742,7 @@ export const auth = {
           username: 'demo',
           email: 'demo@example.com',
           password: 'demo123',
+          role: 'flexible', // 添加role字段
           createdAt: '2024-01-01T00:00:00.000Z',
           updatedAt: '2024-01-01T00:00:00.000Z'
         }

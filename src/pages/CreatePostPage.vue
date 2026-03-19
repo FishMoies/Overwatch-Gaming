@@ -64,6 +64,9 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 import auth from '../utils/auth.js'
 
 const formData = reactive({
@@ -82,10 +85,8 @@ onMounted(() => {
   if (!currentUser) {
     message.value = '请先登录后再发帖'
     isError.value = true
-    // 2秒后跳转到登录页面
-    setTimeout(() => {
-      window.location.hash = 'login'
-    }, 2000)
+    // 立即跳转到登录页面
+    router.push({ name: 'Login' })
   }
 })
 
@@ -133,10 +134,8 @@ const handleCreatePost = async () => {
       formData.title = ''
       formData.content = ''
       
-      // 2秒后跳转到用户面板
-      setTimeout(() => {
-        window.location.hash = 'user'
-      }, 2000)
+      // 立即跳转到用户面板
+      router.push({ name: 'User' })
     } else {
       message.value = result.message || '发布失败，请重试'
       isError.value = true

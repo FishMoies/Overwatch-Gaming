@@ -51,12 +51,11 @@
               <span class="info-label">担任职责：</span>
               <span class="info-value role-display">
                 <div class="role-icons">
-                  <template v-if="userInfo.role === 'flexible'">
-                    <img src="/96px-职责：重装_图标.webp" alt="重装" class="role-icon flexible-icon" />
-                    <img src="/96px-职责：输出_图标.webp" alt="输出" class="role-icon flexible-icon" />
-                    <img src="/96px-职责：支援_图标.webp" alt="支援" class="role-icon flexible-icon" />
+                  <template v-if="roleIcons.length > 1">
+                    <img v-for="(icon, index) in roleIcons" :key="index" :src="icon" :alt="roleDisplayName" class="role-icon flexible-icon" />
                   </template>
-                  <img v-else :src="roleIcon" :alt="roleDisplayName" class="role-icon" />
+                  <img v-else-if="roleIcons.length === 1" :src="roleIcons[0]" :alt="roleDisplayName" class="role-icon" />
+                  <div v-else class="no-role">未设置</div>
                 </div>
                 {{ roleDisplayName }}
                 <button class="change-role-button" @click="showChangeRole = true">更改</button>
@@ -391,43 +390,52 @@
       <div v-if="showChangeRole" class="modal-overlay" @click.self="showChangeRole = false">
         <div class="modal-content">
           <h3>选择担任职责</h3>
-          <p class="form-hint">请选择您在战队中的主要职责</p>
+          <p class="form-hint">请选择您在战队中的主要职责（可多选，最多2个，或选择灵活）</p>
           
           <div class="role-options" color="#000000">
             <div
               class="role-option"
-              :class="{ 'selected': selectedRole === 'heavy' }"
-              @click="selectedRole = 'heavy'"
+              :class="{ 'selected': isRoleSelected('heavy'), 'disabled': isRoleSelected('flexible') }"
+              @click="toggleRoleSelection('heavy')"
             >
               <img src="/96px-职责：重装_图标.webp" alt="重装" class="role-option-icon" />
               <span class="role-option-label">重装</span>
               <p class="role-option-desc">承受伤害，保护队友</p>
+              <div class="role-checkbox" :class="{ 'checked': isRoleSelected('heavy') }">
+                <span v-if="isRoleSelected('heavy')">✓</span>
+              </div>
             </div>
             
             <div
               class="role-option"
-              :class="{ 'selected': selectedRole === 'damage' }"
-              @click="selectedRole = 'damage'"
+              :class="{ 'selected': isRoleSelected('damage'), 'disabled': isRoleSelected('flexible') }"
+              @click="toggleRoleSelection('damage')"
             >
               <img src="/96px-职责：输出_图标.webp" alt="输出" class="role-option-icon" />
               <span class="role-option-label">输出</span>
               <p class="role-option-desc">造成伤害，击败敌人</p>
+              <div class="role-checkbox" :class="{ 'checked': isRoleSelected('damage') }">
+                <span v-if="isRoleSelected('damage')">✓</span>
+              </div>
             </div>
             
             <div
               class="role-option"
-              :class="{ 'selected': selectedRole === 'support' }"
-              @click="selectedRole = 'support'"
+              :class="{ 'selected': isRoleSelected('support'), 'disabled': isRoleSelected('flexible') }"
+              @click="toggleRoleSelection('support')"
             >
               <img src="/96px-职责：支援_图标.webp" alt="支援" class="role-option-icon" />
               <span class="role-option-label">支援</span>
               <p class="role-option-desc">治疗辅助，提供支援</p>
+              <div class="role-checkbox" :class="{ 'checked': isRoleSelected('support') }">
+                <span v-if="isRoleSelected('support')">✓</span>
+              </div>
             </div>
             
             <div
               class="role-option"
-              :class="{ 'selected': selectedRole === 'flexible' }"
-              @click="selectedRole = 'flexible'"
+              :class="{ 'selected': isRoleSelected('flexible'), 'disabled': selectedRolesCount > 0 && !isRoleSelected('flexible') }"
+              @click="toggleRoleSelection('flexible')"
             >
               <div class="flexible-icons">
                 <img src="/96px-职责：重装_图标.webp" alt="重装" class="role-option-icon flexible-icon" />
@@ -436,7 +444,20 @@
               </div>
               <span class="role-option-label">灵活</span>
               <p class="role-option-desc">根据情况切换职责</p>
+              <div class="role-checkbox" :class="{ 'checked': isRoleSelected('flexible') }">
+                <span v-if="isRoleSelected('flexible')">✓</span>
+              </div>
             </div>
+          </div>
+          
+          <div class="selection-info">
+            <p v-if="selectedRolesCount > 0">
+              已选择 {{ selectedRolesCount }} 个职责:
+              <span class="selected-roles-list">
+                {{ selectedRoles.map(role => ROLE_DISPLAY_NAMES[role]).join('、') }}
+              </span>
+            </p>
+            <p v-else>请至少选择一个职责</p>
           </div>
           
           <div v-if="roleMessage" class="message" :class="{ 'error': isRoleError }">
@@ -502,53 +523,170 @@ const teamData = reactive({
 
 // 职责相关变量
 const showChangeRole = ref(false);
-const selectedRole = ref('');
+const selectedRoles = ref([]); // 改为数组，支持多选
 const roleMessage = ref('');
 const isRoleError = ref(false);
 
-// 计算职责图标和显示名称
-const roleIcon = computed(() => {
-  const role = userInfo.value?.role || 'flexible';
-  const iconMap = {
-    'heavy': '/96px-职责：重装_图标.webp',
-    'damage': '/96px-职责：输出_图标.webp',
-    'support': '/96px-职责：支援_图标.webp',
-    'flexible': '' // 灵活显示多个图标
-  };
-  return iconMap[role] || '';
+// 职责选项
+const ROLE_OPTIONS = {
+  HEAVY: 'heavy',
+  DAMAGE: 'damage',
+  SUPPORT: 'support',
+  FLEXIBLE: 'flexible'
+};
+
+// 职责显示名称映射
+const ROLE_DISPLAY_NAMES = {
+  'heavy': '重装',
+  'damage': '输出',
+  'support': '支援',
+  'flexible': '灵活'
+};
+
+// 处理职责选择
+const toggleRoleSelection = (role) => {
+  if (role === ROLE_OPTIONS.FLEXIBLE) {
+    // 选择灵活时，清空其他选项
+    selectedRoles.value = [ROLE_OPTIONS.FLEXIBLE];
+  } else {
+    // 选择其他职责时，移除灵活选项
+    const index = selectedRoles.value.indexOf(ROLE_OPTIONS.FLEXIBLE);
+    if (index !== -1) {
+      selectedRoles.value.splice(index, 1);
+    }
+    
+    // 切换当前职责的选择状态
+    const roleIndex = selectedRoles.value.indexOf(role);
+    if (roleIndex === -1) {
+      // 最多选择2个非灵活职责
+      if (selectedRoles.value.length < 2) {
+        selectedRoles.value.push(role);
+      }
+    } else {
+      selectedRoles.value.splice(roleIndex, 1);
+    }
+  }
+};
+
+// 检查职责是否被选中
+const isRoleSelected = (role) => {
+  return selectedRoles.value.includes(role);
+};
+
+// 获取选中的职责数量
+const selectedRolesCount = computed(() => {
+  return selectedRoles.value.length;
+});
+
+// 计算职责图标和显示名称（支持数组）
+const roleIcons = computed(() => {
+  const roles = userInfo.value?.role;
+  
+  // 处理旧数据（可能是字符串）和新数据（数组）
+  if (!roles) {
+    return ['/96px-职责：重装_图标.webp', '/96px-职责：输出_图标.webp', '/96px-职责：支援_图标.webp'];
+  }
+  
+  if (Array.isArray(roles)) {
+    if (roles.includes('flexible') || roles.length === 0) {
+      // 灵活或空数组显示所有图标
+      return ['/96px-职责：重装_图标.webp', '/96px-职责：输出_图标.webp', '/96px-职责：支援_图标.webp'];
+    } else {
+      // 显示选中的职责图标
+      const iconMap = {
+        'heavy': '/96px-职责：重装_图标.webp',
+        'damage': '/96px-职责：输出_图标.webp',
+        'support': '/96px-职责：支援_图标.webp'
+      };
+      return roles.map(role => iconMap[role]).filter(Boolean);
+    }
+  } else {
+    // 旧数据（字符串）
+    const iconMap = {
+      'heavy': '/96px-职责：重装_图标.webp',
+      'damage': '/96px-职责：输出_图标.webp',
+      'support': '/96px-职责：支援_图标.webp',
+      'flexible': '' // 灵活显示多个图标
+    };
+    const icon = iconMap[roles];
+    return icon ? [icon] : [];
+  }
 });
 
 const roleDisplayName = computed(() => {
-  const role = userInfo.value?.role || 'flexible';
-  const nameMap = {
-    'heavy': '重装',
-    'damage': '输出',
-    'support': '支援',
-    'flexible': '灵活'
-  };
-  return nameMap[role] || '未知';
+  const roles = userInfo.value?.role;
+  
+  if (!roles) {
+    return '灵活';
+  }
+  
+  if (Array.isArray(roles)) {
+    if (roles.includes('flexible') || roles.length === 0) {
+      return '灵活';
+    } else {
+      return roles.map(role => ROLE_DISPLAY_NAMES[role]).join('、');
+    }
+  } else {
+    // 旧数据（字符串）
+    const nameMap = {
+      'heavy': '重装',
+      'damage': '输出',
+      'support': '支援',
+      'flexible': '灵活'
+    };
+    return nameMap[roles] || '未知';
+  }
 });
 
-// 获取角色显示名称（用于成员列表）
+// 获取角色显示名称（用于成员列表，支持数组）
 const getRoleDisplayName = (role) => {
-  const nameMap = {
-    'heavy': '重装',
-    'damage': '输出',
-    'support': '支援',
-    'flexible': '灵活'
-  };
-  return nameMap[role] || '未知';
+  if (Array.isArray(role)) {
+    if (role.includes('flexible') || role.length === 0) {
+      return '灵活';
+    } else {
+      return role.map(r => ROLE_DISPLAY_NAMES[r]).join('、');
+    }
+  } else {
+    const nameMap = {
+      'heavy': '重装',
+      'damage': '输出',
+      'support': '支援',
+      'flexible': '灵活'
+    };
+    return nameMap[role] || '未知';
+  }
 };
 
-// 获取角色图标
+// 获取角色图标（用于成员列表，支持数组）
 const getRoleIcon = (role) => {
-  const iconMap = {
-    'heavy': '/96px-职责：重装_图标.webp',
-    'damage': '/96px-职责：输出_图标.webp',
-    'support': '/96px-职责：支援_图标.webp',
-    'flexible': ''
-  };
-  return iconMap[role] || '';
+  if (Array.isArray(role)) {
+    if (role.includes('flexible') || role.length === 0) {
+      return '';
+    } else if (role.length === 1) {
+      const iconMap = {
+        'heavy': '/96px-职责：重装_图标.webp',
+        'damage': '/96px-职责：输出_图标.webp',
+        'support': '/96px-职责：支援_图标.webp'
+      };
+      return iconMap[role[0]] || '';
+    } else {
+      // 多个职责，返回第一个
+      const iconMap = {
+        'heavy': '/96px-职责：重装_图标.webp',
+        'damage': '/96px-职责：输出_图标.webp',
+        'support': '/96px-职责：支援_图标.webp'
+      };
+      return iconMap[role[0]] || '';
+    }
+  } else {
+    const iconMap = {
+      'heavy': '/96px-职责：重装_图标.webp',
+      'damage': '/96px-职责：输出_图标.webp',
+      'support': '/96px-职责：支援_图标.webp',
+      'flexible': ''
+    };
+    return iconMap[role] || '';
+  }
 };
 
 // 获取角色CSS类
@@ -569,7 +707,7 @@ const loadUserInfo = () => {
     userInfo.value = user;
   } else {
     // 如果未登录，跳转到首页
-    window.location.hash = '';
+    router.push({ name: 'Home' });
   }
 };
 
@@ -595,10 +733,8 @@ const handleLogout = () => {
     message.value = '已成功退出登录';
     isError.value = false;
     
-    // 2秒后跳转到首页
-    setTimeout(() => {
-      window.location.hash = '';
-    }, 2000);
+    // 立即跳转到首页
+    router.push({ name: 'Home' });
   } else {
     message.value = '退出登录失败';
     isError.value = true;
@@ -660,11 +796,9 @@ const handleChangePassword = () => {
     passwordData.newPassword = '';
     passwordData.confirmNewPassword = '';
     
-    // 3秒后关闭模态框
-    setTimeout(() => {
-      showChangePassword.value = false;
-      passwordMessage.value = '';
-    }, 3000);
+    // 立即关闭模态框
+    showChangePassword.value = false;
+    passwordMessage.value = '';
   } else {
     passwordMessage.value = '密码修改失败';
     isPasswordError.value = true;
@@ -699,10 +833,8 @@ const handleDeleteAccount = () => {
   if (result.success) {
     deleteMessage.value = '账户已成功注销';
     
-    // 3秒后跳转到首页
-    setTimeout(() => {
-      window.location.hash = '';
-    }, 3000);
+    // 立即跳转到首页
+    router.push({ name: 'Home' });
   } else {
     deleteMessage.value = result.message || '注销失败';
   }
@@ -751,11 +883,9 @@ const handleCreateTeam = () => {
     // 更新战队信息
     loadTeamInfo();
     
-    // 3秒后关闭模态框
-    setTimeout(() => {
-      showCreateTeam.value = false;
-      teamMessage.value = '';
-    }, 3000);
+    // 立即关闭模态框
+    showCreateTeam.value = false;
+    teamMessage.value = '';
   } else {
     teamMessage.value = result.message || '创建战队失败';
     isTeamError.value = true;
@@ -789,11 +919,9 @@ const handleJoinTeam = () => {
     // 更新战队信息
     loadTeamInfo();
     
-    // 3秒后关闭模态框
-    setTimeout(() => {
-      showJoinTeam.value = false;
-      joinTeamMessage.value = '';
-    }, 3000);
+    // 立即关闭模态框
+    showJoinTeam.value = false;
+    joinTeamMessage.value = '';
   } else {
     joinTeamMessage.value = result.message || '加入战队失败';
     isJoinTeamError.value = true;
@@ -816,11 +944,9 @@ const handleLeaveTeam = () => {
     // 更新战队信息
     loadTeamInfo();
     
-    // 3秒后关闭模态框
-    setTimeout(() => {
-      showLeaveConfirm.value = false;
-      leaveTeamMessage.value = '';
-    }, 3000);
+    // 立即关闭模态框
+    showLeaveConfirm.value = false;
+    leaveTeamMessage.value = '';
   } else {
     leaveTeamMessage.value = result.message || '退出战队失败';
   }
@@ -835,13 +961,34 @@ const handleChangeRole = () => {
     return;
   }
   
-  if (!selectedRole.value) {
-    roleMessage.value = '请选择一个职责';
+  // 验证至少选择了一个职责
+  if (selectedRoles.value.length === 0) {
+    roleMessage.value = '请至少选择一个职责';
     isRoleError.value = true;
     return;
   }
   
-  const result = auth.updateUserRole(currentUser.id, selectedRole.value);
+  // 验证选择逻辑：灵活与其他职责互斥
+  const hasFlexible = selectedRoles.value.includes(ROLE_OPTIONS.FLEXIBLE);
+  const hasOtherRoles = selectedRoles.value.some(role =>
+    role !== ROLE_OPTIONS.FLEXIBLE
+  );
+  
+  if (hasFlexible && hasOtherRoles) {
+    roleMessage.value = '灵活选项不能与其他职责同时选择';
+    isRoleError.value = true;
+    return;
+  }
+  
+  // 验证非灵活职责最多选择2个
+  if (!hasFlexible && selectedRoles.value.length > 2) {
+    roleMessage.value = '最多只能选择2个职责';
+    isRoleError.value = true;
+    return;
+  }
+  
+  // 调用更新职责函数（需要修改后端支持数组）
+  const result = auth.updateUserRoles(currentUser.id, selectedRoles.value);
   
   if (result.success) {
     roleMessage.value = '职责更新成功！';
@@ -850,12 +997,13 @@ const handleChangeRole = () => {
     // 更新用户信息
     loadUserInfo();
     
-    // 3秒后关闭模态框
-    setTimeout(() => {
-      showChangeRole.value = false;
-      roleMessage.value = '';
-      selectedRole.value = '';
-    }, 3000);
+    // 立即关闭模态框
+    showChangeRole.value = false;
+    roleMessage.value = '';
+    selectedRoles.value = [];
+    
+    // 立即刷新当前页面以更新显示
+    location.reload();
   } else {
     roleMessage.value = result.message || '更新职责失败';
     isRoleError.value = true;
@@ -889,7 +1037,7 @@ const loadUserPosts = () => {
 
 // 跳转到发帖页面
 const goToCreatePost = () => {
-  window.location.hash = 'createpost';
+  router.push({ name: 'CreatePost' });
 };
 
 // 查看帖子详情

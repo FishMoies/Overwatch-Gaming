@@ -141,10 +141,8 @@ const handleRegister = () => {
   formData.password = ''
   formData.confirmPassword = ''
   
-  // 3秒后跳转到登录页面
-  setTimeout(() => {
-    router.push({ name: 'Login' })
-  }, 3000)
+  // 立即跳转到登录页面
+  router.push({ name: 'Login' })
 }
 
 const goToHome = () => {

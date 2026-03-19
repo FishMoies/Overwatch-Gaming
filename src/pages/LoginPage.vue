@@ -126,10 +126,8 @@ const handleLogin = () => {
   loginData.username = ''
   loginData.password = ''
   
-  // 3秒后跳转到首页
-  setTimeout(() => {
-    router.push({ name: 'Home' })
-  }, 3000)
+  // 立即跳转到首页
+  router.push({ name: 'Home' })
 }
 
 const goToHome = () => {
