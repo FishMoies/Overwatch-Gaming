@@ -1,0 +1,556 @@
+// 本地存储键名
+const STORAGE_KEYS = {
+  USERS: 'users',
+  CURRENT_USER: 'currentUser',
+  TEAMS: 'teams'
+};
+
+// 职责选项
+const ROLE_OPTIONS = {
+  HEAVY: 'heavy',      // 重装
+  DAMAGE: 'damage',    // 输出
+  SUPPORT: 'support',  // 支援
+  FLEXIBLE: 'flexible' // 灵活
+};
+
+// 用户管理工具
+export const auth = {
+  // 获取所有用户
+  getAllUsers() {
+    try {
+      const usersJson = localStorage.getItem(STORAGE_KEYS.USERS);
+      return usersJson ? JSON.parse(usersJson) : [];
+    } catch (error) {
+      console.error('读取用户数据失败:', error);
+      return [];
+    }
+  },
+
+  // 保存所有用户
+  saveAllUsers(users) {
+    try {
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
+      return true;
+    } catch (error) {
+      console.error('保存用户数据失败:', error);
+      return false;
+    }
+  },
+
+  // 注册新用户
+  registerUser(userData) {
+    const users = this.getAllUsers();
+    
+    // 检查用户名是否已存在
+    if (users.some(user => user.username === userData.username)) {
+      return { success: false, message: '用户名已存在' };
+    }
+    
+    // 检查邮箱是否已存在
+    if (users.some(user => user.email === userData.email)) {
+      return { success: false, message: '邮箱已被注册' };
+    }
+    
+    // 创建新用户对象
+    const newUser = {
+      id: Date.now(),
+      username: userData.username,
+      email: userData.email,
+      password: userData.password,
+      role: ROLE_OPTIONS.FLEXIBLE, // 默认职责为灵活
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    // 添加到用户列表
+    users.push(newUser);
+    
+    // 保存到本地存储
+    if (this.saveAllUsers(users)) {
+      return { success: true, user: newUser };
+    } else {
+      return { success: false, message: '注册失败，请重试' };
+    }
+  },
+
+  // 用户登录
+  login(username, password, rememberMe = false) {
+    const users = this.getAllUsers();
+    
+    // 查找用户（支持用户名或邮箱登录）
+    const user = users.find(u => 
+      u.username === username || u.email === username
+    );
+    
+    if (!user) {
+      return { success: false, message: '用户不存在' };
+    }
+    
+    if (user.password !== password) {
+      return { success: false, message: '密码错误' };
+    }
+    
+    // 创建会话对象
+    const session = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      loggedIn: true,
+      loginTime: new Date().toISOString(),
+      rememberMe: rememberMe
+    };
+    
+    // 保存会话
+    this.saveSession(session, rememberMe);
+    
+    return { success: true, user: session };
+  },
+
+  // 保存会话
+  saveSession(session, rememberMe = false) {
+    try {
+      if (rememberMe) {
+        // 长期保存（30天）
+        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(session));
+      } else {
+        // 会话级保存
+        sessionStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(session));
+      }
+      return true;
+    } catch (error) {
+      console.error('保存会话失败:', error);
+      return false;
+    }
+  },
+
+  // 获取当前用户
+  getCurrentUser() {
+    try {
+      // 先检查 sessionStorage
+      let sessionJson = sessionStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+      
+      // 如果没有，检查 localStorage
+      if (!sessionJson) {
+        sessionJson = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+      }
+      
+      if (sessionJson) {
+        const session = JSON.parse(sessionJson);
+        // 检查会话是否过期（如果是长期保存的）
+        if (session.rememberMe) {
+          const loginTime = new Date(session.loginTime);
+          const now = new Date();
+          const daysDiff = (now - loginTime) / (1000 * 60 * 60 * 24);
+          
+          // 如果超过30天，清除会话
+          if (daysDiff > 30) {
+            this.logout();
+            return null;
+          }
+        }
+        return session;
+      }
+      return null;
+    } catch (error) {
+      console.error('获取当前用户失败:', error);
+      return null;
+    }
+  },
+
+  // 检查是否已登录
+  isLoggedIn() {
+    return this.getCurrentUser() !== null;
+  },
+
+  // 获取当前用户名
+  getCurrentUsername() {
+    const user = this.getCurrentUser();
+    return user ? user.username : null;
+  },
+
+  // 注销
+  logout() {
+    try {
+      sessionStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+      return true;
+    } catch (error) {
+      console.error('注销失败:', error);
+      return false;
+    }
+  },
+
+  // 更新用户信息
+  updateUser(userId, updates) {
+    const users = this.getAllUsers();
+    const userIndex = users.findIndex(user => user.id === userId);
+    
+    if (userIndex === -1) {
+      return { success: false, message: '用户不存在' };
+    }
+    
+    // 更新用户信息
+    users[userIndex] = {
+      ...users[userIndex],
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+    
+    // 保存更新
+    if (this.saveAllUsers(users)) {
+      // 如果当前用户更新了自己的信息，更新会话
+      const currentUser = this.getCurrentUser();
+      if (currentUser && currentUser.id === userId) {
+        const updatedSession = {
+          ...currentUser,
+          ...updates
+        };
+        this.saveSession(updatedSession, currentUser.rememberMe);
+      }
+      
+      return { success: true, user: users[userIndex] };
+    } else {
+      return { success: false, message: '更新失败' };
+    }
+  },
+
+  // 删除用户（仅用于测试）
+  deleteUser(userId) {
+    const users = this.getAllUsers();
+    const filteredUsers = users.filter(user => user.id !== userId);
+    
+    if (filteredUsers.length === users.length) {
+      return { success: false, message: '用户不存在' };
+    }
+    
+    if (this.saveAllUsers(filteredUsers)) {
+      // 如果删除的是当前登录用户，则注销
+      const currentUser = this.getCurrentUser();
+      if (currentUser && currentUser.id === userId) {
+        this.logout();
+      }
+      
+      return { success: true };
+    } else {
+      return { success: false, message: '删除失败' };
+    }
+  },
+
+  // 验证密码强度
+  validatePassword(password) {
+    if (password.length < 6) {
+      return { valid: false, message: '密码长度至少为6位' };
+    }
+    
+    // 可以添加更多密码强度规则
+    // if (!/[A-Z]/.test(password)) {
+    //   return { valid: false, message: '密码必须包含大写字母' };
+    // }
+    // if (!/[0-9]/.test(password)) {
+    //   return { valid: false, message: '密码必须包含数字' };
+    // }
+    
+    return { valid: true };
+  },
+
+  // 获取所有战队
+  getAllTeams() {
+    try {
+      const teamsJson = localStorage.getItem(STORAGE_KEYS.TEAMS);
+      return teamsJson ? JSON.parse(teamsJson) : [];
+    } catch (error) {
+      console.error('读取战队数据失败:', error);
+      return [];
+    }
+  },
+
+  // 保存所有战队
+  saveAllTeams(teams) {
+    try {
+      localStorage.setItem(STORAGE_KEYS.TEAMS, JSON.stringify(teams));
+      return true;
+    } catch (error) {
+      console.error('保存战队数据失败:', error);
+      return false;
+    }
+  },
+
+  // 创建战队
+  createTeam(teamName, creatorId) {
+    const teams = this.getAllTeams();
+    const users = this.getAllUsers();
+    
+    // 检查用户是否存在
+    const creator = users.find(user => user.id === creatorId);
+    if (!creator) {
+      return { success: false, message: '用户不存在' };
+    }
+    
+    // 检查用户是否已经加入其他战队
+    if (creator.teamId) {
+      return { success: false, message: '您已经加入了其他战队，请先退出' };
+    }
+    
+    // 生成随机四位数标识符
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000); // 1000-9999
+    const fullTeamName = `${teamName}#${randomSuffix}`;
+    
+    // 检查战队名称是否已存在
+    if (teams.some(team => team.name === fullTeamName)) {
+      return { success: false, message: '战队名称已存在，请重试' };
+    }
+    
+    // 创建新战队对象
+    const newTeam = {
+      id: Date.now(),
+      name: fullTeamName,
+      displayName: teamName,
+      creatorId: creatorId,
+      createdAt: new Date().toISOString(),
+      memberIds: [creatorId]
+    };
+    
+    // 添加到战队列表
+    teams.push(newTeam);
+    
+    // 保存战队
+    if (!this.saveAllTeams(teams)) {
+      return { success: false, message: '创建战队失败，请重试' };
+    }
+    
+    // 更新用户的 teamId
+    creator.teamId = newTeam.id;
+    if (!this.saveAllUsers(users)) {
+      // 回滚：移除刚创建的战队
+      const index = teams.findIndex(t => t.id === newTeam.id);
+      teams.splice(index, 1);
+      this.saveAllTeams(teams);
+      return { success: false, message: '更新用户信息失败' };
+    }
+    
+    // 更新当前用户会话中的 teamId
+    const currentUser = this.getCurrentUser();
+    if (currentUser && currentUser.id === creatorId) {
+      currentUser.teamId = newTeam.id;
+      this.saveSession(currentUser, currentUser.rememberMe);
+    }
+    
+    return { success: true, team: newTeam };
+  },
+
+  // 加入战队
+  joinTeam(teamName, userId) {
+    const teams = this.getAllTeams();
+    const users = this.getAllUsers();
+    
+    // 检查用户是否存在
+    const user = users.find(u => u.id === userId);
+    if (!user) {
+      return { success: false, message: '用户不存在' };
+    }
+    
+    // 检查用户是否已经加入其他战队
+    if (user.teamId) {
+      return { success: false, message: '您已经加入了其他战队，请先退出' };
+    }
+    
+    // 查找战队（精确匹配完整名称）
+    const team = teams.find(t => t.name === teamName);
+    if (!team) {
+      return { success: false, message: '战队不存在，请检查战队名称' };
+    }
+    
+    // 检查用户是否已经是战队成员
+    if (team.memberIds.includes(userId)) {
+      return { success: false, message: '您已经是该战队的成员' };
+    }
+    
+    // 添加用户到战队成员列表
+    team.memberIds.push(userId);
+    
+    // 保存战队
+    if (!this.saveAllTeams(teams)) {
+      return { success: false, message: '加入战队失败，请重试' };
+    }
+    
+    // 更新用户的 teamId
+    user.teamId = team.id;
+    if (!this.saveAllUsers(users)) {
+      // 回滚：从战队成员中移除用户
+      const memberIndex = team.memberIds.indexOf(userId);
+      team.memberIds.splice(memberIndex, 1);
+      this.saveAllTeams(teams);
+      return { success: false, message: '更新用户信息失败' };
+    }
+    
+    // 更新当前用户会话中的 teamId
+    const currentUser = this.getCurrentUser();
+    if (currentUser && currentUser.id === userId) {
+      currentUser.teamId = team.id;
+      this.saveSession(currentUser, currentUser.rememberMe);
+    }
+    
+    return { success: true, team };
+  },
+
+  // 退出战队
+  leaveTeam(userId) {
+    const teams = this.getAllTeams();
+    const users = this.getAllUsers();
+    
+    // 检查用户是否存在
+    const user = users.find(u => u.id === userId);
+    if (!user) {
+      return { success: false, message: '用户不存在' };
+    }
+    
+    // 检查用户是否加入了战队
+    if (!user.teamId) {
+      return { success: false, message: '您尚未加入任何战队' };
+    }
+    
+    // 查找战队
+    const team = teams.find(t => t.id === user.teamId);
+    if (!team) {
+      // 战队不存在，清除用户的 teamId
+      user.teamId = null;
+      this.saveAllUsers(users);
+      return { success: false, message: '战队不存在，已自动清除关联' };
+    }
+    
+    // 从战队成员中移除用户
+    const memberIndex = team.memberIds.indexOf(userId);
+    if (memberIndex === -1) {
+      user.teamId = null;
+      this.saveAllUsers(users);
+      return { success: false, message: '您不是该战队的成员，已清除关联' };
+    }
+    
+    team.memberIds.splice(memberIndex, 1);
+    
+    // 如果战队没有成员了，删除战队
+    let teamDeleted = false;
+    if (team.memberIds.length === 0) {
+      const teamIndex = teams.findIndex(t => t.id === team.id);
+      teams.splice(teamIndex, 1);
+      teamDeleted = true;
+    }
+    
+    // 保存战队
+    if (!this.saveAllTeams(teams)) {
+      return { success: false, message: '退出战队失败，请重试' };
+    }
+    
+    // 更新用户的 teamId
+    user.teamId = null;
+    if (!this.saveAllUsers(users)) {
+      // 回滚：重新添加用户到战队
+      if (teamDeleted) {
+        teams.push(team);
+      } else {
+        team.memberIds.push(userId);
+      }
+      this.saveAllTeams(teams);
+      return { success: false, message: '更新用户信息失败' };
+    }
+    
+    // 更新当前用户会话中的 teamId
+    const currentUser = this.getCurrentUser();
+    if (currentUser && currentUser.id === userId) {
+      currentUser.teamId = null;
+      this.saveSession(currentUser, currentUser.rememberMe);
+    }
+    
+    return { success: true, teamDeleted };
+  },
+
+  // 获取用户所在的战队信息
+  getUserTeam(userId) {
+    const users = this.getAllUsers();
+    const user = users.find(u => u.id === userId);
+    
+    if (!user || !user.teamId) {
+      return null;
+    }
+    
+    const teams = this.getAllTeams();
+    return teams.find(t => t.id === user.teamId) || null;
+  },
+
+  // 获取战队成员列表
+  getTeamMembers(teamId) {
+    const teams = this.getAllTeams();
+    const team = teams.find(t => t.id === teamId);
+    
+    if (!team) {
+      return [];
+    }
+    
+    const users = this.getAllUsers();
+    return users.filter(user => team.memberIds.includes(user.id));
+  },
+
+  // 更新用户职责
+  updateUserRole(userId, role) {
+    const users = this.getAllUsers();
+    const userIndex = users.findIndex(user => user.id === userId);
+    
+    if (userIndex === -1) {
+      return { success: false, message: '用户不存在' };
+    }
+    
+    // 验证职责是否有效
+    const validRoles = Object.values(ROLE_OPTIONS);
+    if (!validRoles.includes(role)) {
+      return { success: false, message: '无效的职责选项' };
+    }
+    
+    // 更新用户职责
+    users[userIndex].role = role;
+    users[userIndex].updatedAt = new Date().toISOString();
+    
+    if (this.saveAllUsers(users)) {
+      // 如果当前用户更新了自己的职责，更新会话
+      const currentUser = this.getCurrentUser();
+      if (currentUser && currentUser.id === userId) {
+        currentUser.role = role;
+        this.saveSession(currentUser, currentUser.rememberMe);
+      }
+      
+      return { success: true, user: users[userIndex] };
+    } else {
+      return { success: false, message: '更新职责失败' };
+    }
+  },
+
+  // 初始化测试数据（仅用于开发）
+  initTestData() {
+    const users = this.getAllUsers();
+    if (users.length === 0) {
+      const testUsers = [
+        {
+          id: 1,
+          username: 'testuser',
+          email: 'test@example.com',
+          password: 'password123',
+          createdAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:00.000Z'
+        },
+        {
+          id: 2,
+          username: 'demo',
+          email: 'demo@example.com',
+          password: 'demo123',
+          createdAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:00.000Z'
+        }
+      ];
+      
+      localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(testUsers));
+      console.log('测试数据已初始化');
+    }
+  }
+};
+
+// 导出默认实例
+export default auth;

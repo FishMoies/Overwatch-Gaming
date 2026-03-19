@@ -1,0 +1,1400 @@
+<template>
+  <div class="user-panel page-enter-active">
+    <div class="panel-container">
+      <h1 class="page-title">用户面板</h1>
+      
+      <!-- 用户信息展示 -->
+      <div class="user-info-section">
+        <h2>基本信息</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">用户名：</span>
+            <span class="info-value">{{ userInfo.username }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">邮箱：</span>
+            <span class="info-value">{{ userInfo.email }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">注册时间：</span>
+            <span class="info-value">{{ formatDate(userInfo.createdAt) }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">最后登录：</span>
+            <span class="info-value">{{ formatDate(userInfo.loginTime) }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 战队信息区域 -->
+      <div class="team-section">
+        <h2>战队信息</h2>
+        <div v-if="userTeam" class="team-info">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">战队名称：</span>
+              <span class="info-value">{{ userTeam.name }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">创建时间：</span>
+              <span class="info-value">{{ formatDate(userTeam.createdAt) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">成员数量：</span>
+              <span class="info-value">{{ teamMembers.length }} 人</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">您的身份：</span>
+              <span class="info-value">{{ userTeam.creatorId === userInfo.id ? '创建者' : '成员' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">担任职责：</span>
+              <span class="info-value role-display">
+                <div class="role-icons">
+                  <template v-if="userInfo.role === 'flexible'">
+                    <img src="/96px-职责：重装_图标.webp" alt="重装" class="role-icon flexible-icon" />
+                    <img src="/96px-职责：输出_图标.webp" alt="输出" class="role-icon flexible-icon" />
+                    <img src="/96px-职责：支援_图标.webp" alt="支援" class="role-icon flexible-icon" />
+                  </template>
+                  <img v-else :src="roleIcon" :alt="roleDisplayName" class="role-icon" />
+                </div>
+                {{ roleDisplayName }}
+                <button class="change-role-button" @click="showChangeRole = true">更改</button>
+              </span>
+            </div>
+          </div>
+          
+          <!-- 战队成员列表 -->
+          <div class="team-members-section" v-if="teamMembers.length > 0">
+            <h3 class="members-title">战队成员 ({{ teamMembers.length }}/6)</h3>
+            <div class="members-list">
+              <div v-for="member in teamMembers" :key="member.id" class="member-item">
+                <div class="member-info">
+                  <span class="member-name">{{ member.username }}</span>
+                  <span class="member-role" :class="getRoleClass(member.role)">
+                    {{ getRoleDisplayName(member.role) }}
+                  </span>
+                </div>
+                <div class="member-icons">
+                  <img
+                    v-if="member.role !== 'flexible'"
+                    :src="getRoleIcon(member.role)"
+                    :alt="getRoleDisplayName(member.role)"
+                    class="member-role-icon"
+                  />
+                  <div v-else class="flexible-icons-small">
+                    <img src="/96px-职责：重装_图标.webp" alt="重装" class="flexible-icon-small" />
+                    <img src="/96px-职责：输出_图标.webp" alt="输出" class="flexible-icon-small" />
+                    <img src="/96px-职责：支援_图标.webp" alt="支援" class="flexible-icon-small" />
+                  </div>
+                  <span v-if="member.id === userTeam.creatorId" class="creator-badge">创建者</span>
+                  <span v-else-if="member.id === userInfo.id" class="you-badge">您</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="team-actions">
+            <button class="action-button leave-team-button" @click="showLeaveConfirm = true">
+              <span class="button-icon">🚪</span>
+              <span class="button-text">退出战队</span>
+            </button>
+          </div>
+        </div>
+        
+        <div v-else class="no-team">
+          <p class="no-team-message">您尚未加入任何战队</p>
+          <div class="team-actions">
+            <button class="action-button create-team-button" @click="showCreateTeam = true">
+              <span class="button-icon">🏆</span>
+              <span class="button-text">创建战队</span>
+            </button>
+            <button class="action-button join-team-button" @click="goToJoinTeamPage">
+              <span class="button-icon">➕</span>
+              <span class="button-text">浏览并加入战队</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 功能按钮区域 -->
+      <div class="actions-section">
+        <h2>账户操作</h2>
+        <div class="action-buttons">
+          <button class="action-button logout-button" @click="handleLogout">
+            <span class="button-icon">🚪</span>
+            <span class="button-text">退出登录</span>
+          </button>
+          
+          <button class="action-button change-password-button" @click="showChangePassword = true">
+            <span class="button-icon">🔒</span>
+            <span class="button-text">修改密码</span>
+          </button>
+          
+          <button class="action-button delete-account-button" @click="showDeleteConfirm = true">
+            <span class="button-icon">🗑️</span>
+            <span class="button-text">注销账户</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 修改密码模态框 -->
+      <div v-if="showChangePassword" class="modal-overlay" @click.self="showChangePassword = false">
+        <div class="modal-content">
+          <h3>修改密码</h3>
+          <form @submit.prevent="handleChangePassword" class="password-form">
+            <div class="form-group">
+              <label for="currentPassword">当前密码</label>
+              <input
+                type="password"
+                id="currentPassword"
+                v-model="passwordData.currentPassword"
+                required
+                placeholder="请输入当前密码"
+                class="form-input"
+              />
+            </div>
+            
+            <div class="form-group">
+              <label for="newPassword">新密码</label>
+              <input
+                type="password"
+                id="newPassword"
+                v-model="passwordData.newPassword"
+                required
+                placeholder="请输入新密码（至少6位）"
+                class="form-input"
+              />
+            </div>
+            
+            <div class="form-group">
+              <label for="confirmNewPassword">确认新密码</label>
+              <input
+                type="password"
+                id="confirmNewPassword"
+                v-model="passwordData.confirmNewPassword"
+                required
+                placeholder="请再次输入新密码"
+                class="form-input"
+              />
+            </div>
+            
+            <div v-if="passwordMessage" class="message" :class="{ 'error': isPasswordError }">
+              {{ passwordMessage }}
+            </div>
+            
+            <div class="modal-actions">
+              <button type="button" @click="showChangePassword = false" class="modal-button cancel-button">
+                取消
+              </button>
+              <button type="submit" class="modal-button confirm-button">
+                确认修改
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- 注销确认模态框 -->
+      <div v-if="showDeleteConfirm" class="modal-overlay" @click.self="showDeleteConfirm = false">
+        <div class="modal-content">
+          <h3>确认注销账户</h3>
+          <p class="warning-text">⚠️ 警告：此操作不可撤销！您的所有数据将被永久删除。</p>
+          <p>请输入您的密码以确认注销：</p>
+          
+          <div class="form-group">
+            <input
+              type="password"
+              v-model="deletePassword"
+              required
+              placeholder="请输入密码"
+              class="form-input"
+            />
+          </div>
+          
+          <div v-if="deleteMessage" class="message error">
+            {{ deleteMessage }}
+          </div>
+          
+          <div class="modal-actions">
+            <button type="button" @click="showDeleteConfirm = false" class="modal-button cancel-button">
+              取消
+            </button>
+            <button type="button" @click="handleDeleteAccount" class="modal-button delete-button">
+              确认注销
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 创建战队模态框 -->
+      <div v-if="showCreateTeam" class="modal-overlay" @click.self="showCreateTeam = false">
+        <div class="modal-content">
+          <h3>创建战队</h3>
+          <form @submit.prevent="handleCreateTeam" class="team-form">
+            <div class="form-group">
+              <label for="teamName">战队名称</label>
+              <input
+                type="text"
+                id="teamName"
+                v-model="teamData.teamName"
+                required
+                placeholder="请输入战队名称（不含#号）"
+                class="form-input"
+              />
+              <p class="form-hint">系统会自动在名称后添加 #随机四位数 作为唯一标识符</p>
+            </div>
+            
+            <div v-if="teamMessage" class="message" :class="{ 'error': isTeamError }">
+              {{ teamMessage }}
+            </div>
+            
+            <div class="modal-actions">
+              <button type="button" @click="showCreateTeam = false" class="modal-button cancel-button">
+                取消
+              </button>
+              <button type="submit" class="modal-button confirm-button">
+                创建战队
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- 加入战队模态框 -->
+      <div v-if="showJoinTeam" class="modal-overlay" @click.self="showJoinTeam = false">
+        <div class="modal-content">
+          <h3>加入战队</h3>
+          <form @submit.prevent="handleJoinTeam" class="team-form">
+            <div class="form-group">
+              <label for="joinTeamName">战队完整名称</label>
+              <input
+                type="text"
+                id="joinTeamName"
+                v-model="joinTeamName"
+                required
+                placeholder="请输入战队完整名称（包含#号）"
+                class="form-input"
+              />
+              <p class="form-hint">例如：我的战队#1234</p>
+            </div>
+            
+            <div v-if="joinTeamMessage" class="message" :class="{ 'error': isJoinTeamError }">
+              {{ joinTeamMessage }}
+            </div>
+            
+            <div class="modal-actions">
+              <button type="button" @click="showJoinTeam = false" class="modal-button cancel-button">
+                取消
+              </button>
+              <button type="submit" class="modal-button confirm-button">
+                加入战队
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- 退出战队确认模态框 -->
+      <div v-if="showLeaveConfirm" class="modal-overlay" @click.self="showLeaveConfirm = false">
+        <div class="modal-content">
+          <h3>确认退出战队</h3>
+          <p class="warning-text">⚠️ 警告：退出后将无法访问战队内容！</p>
+          <p>如果您是战队创建者，退出后战队将被解散。</p>
+          
+          <div v-if="leaveTeamMessage" class="message error">
+            {{ leaveTeamMessage }}
+          </div>
+          
+          <div class="modal-actions">
+            <button type="button" @click="showLeaveConfirm = false" class="modal-button cancel-button">
+              取消
+            </button>
+            <button type="button" @click="handleLeaveTeam" class="modal-button delete-button">
+              确认退出
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 更改职责模态框 -->
+      <div v-if="showChangeRole" class="modal-overlay" @click.self="showChangeRole = false">
+        <div class="modal-content">
+          <h3>选择担任职责</h3>
+          <p class="form-hint">请选择您在战队中的主要职责</p>
+          
+          <div class="role-options" color="#000000">
+            <div
+              class="role-option"
+              :class="{ 'selected': selectedRole === 'heavy' }"
+              @click="selectedRole = 'heavy'"
+            >
+              <img src="/96px-职责：重装_图标.webp" alt="重装" class="role-option-icon" />
+              <span class="role-option-label">重装</span>
+              <p class="role-option-desc">承受伤害，保护队友</p>
+            </div>
+            
+            <div
+              class="role-option"
+              :class="{ 'selected': selectedRole === 'damage' }"
+              @click="selectedRole = 'damage'"
+            >
+              <img src="/96px-职责：输出_图标.webp" alt="输出" class="role-option-icon" />
+              <span class="role-option-label">输出</span>
+              <p class="role-option-desc">造成伤害，击败敌人</p>
+            </div>
+            
+            <div
+              class="role-option"
+              :class="{ 'selected': selectedRole === 'support' }"
+              @click="selectedRole = 'support'"
+            >
+              <img src="/96px-职责：支援_图标.webp" alt="支援" class="role-option-icon" />
+              <span class="role-option-label">支援</span>
+              <p class="role-option-desc">治疗辅助，提供支援</p>
+            </div>
+            
+            <div
+              class="role-option"
+              :class="{ 'selected': selectedRole === 'flexible' }"
+              @click="selectedRole = 'flexible'"
+            >
+              <div class="flexible-icons">
+                <img src="/96px-职责：重装_图标.webp" alt="重装" class="role-option-icon flexible-icon" />
+                <img src="/96px-职责：输出_图标.webp" alt="输出" class="role-option-icon flexible-icon" />
+                <img src="/96px-职责：支援_图标.webp" alt="支援" class="role-option-icon flexible-icon" />
+              </div>
+              <span class="role-option-label">灵活</span>
+              <p class="role-option-desc">根据情况切换职责</p>
+            </div>
+          </div>
+          
+          <div v-if="roleMessage" class="message" :class="{ 'error': isRoleError }">
+            {{ roleMessage }}
+          </div>
+          
+          <div class="modal-actions">
+            <button type="button" @click="showChangeRole = false" class="modal-button cancel-button">
+              取消
+            </button>
+            <button type="button" @click="handleChangeRole" class="modal-button confirm-button">
+              确认更改
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 操作反馈消息 -->
+      <div v-if="message" class="message" :class="{ 'error': isError }">
+        {{ message }}
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive, onMounted, computed } from 'vue';
+import auth from '../utils/auth.js';
+
+const userInfo = ref({});
+const message = ref('');
+const isError = ref(false);
+
+const showChangePassword = ref(false);
+const showDeleteConfirm = ref(false);
+const passwordMessage = ref('');
+const isPasswordError = ref(false);
+const deleteMessage = ref('');
+const deletePassword = ref('');
+
+const passwordData = reactive({
+  currentPassword: '',
+  newPassword: '',
+  confirmNewPassword: ''
+});
+
+// 战队相关变量
+const showCreateTeam = ref(false);
+const showJoinTeam = ref(false);
+const showLeaveConfirm = ref(false);
+const userTeam = ref(null);
+const teamMembers = ref([]);
+const teamMessage = ref('');
+const isTeamError = ref(false);
+const joinTeamName = ref('');
+const joinTeamMessage = ref('');
+const isJoinTeamError = ref(false);
+const leaveTeamMessage = ref('');
+
+const teamData = reactive({
+  teamName: ''
+});
+
+// 职责相关变量
+const showChangeRole = ref(false);
+const selectedRole = ref('');
+const roleMessage = ref('');
+const isRoleError = ref(false);
+
+// 计算职责图标和显示名称
+const roleIcon = computed(() => {
+  const role = userInfo.value?.role || 'flexible';
+  const iconMap = {
+    'heavy': '/96px-职责：重装_图标.webp',
+    'damage': '/96px-职责：输出_图标.webp',
+    'support': '/96px-职责：支援_图标.webp',
+    'flexible': '' // 灵活显示多个图标
+  };
+  return iconMap[role] || '';
+});
+
+const roleDisplayName = computed(() => {
+  const role = userInfo.value?.role || 'flexible';
+  const nameMap = {
+    'heavy': '重装',
+    'damage': '输出',
+    'support': '支援',
+    'flexible': '灵活'
+  };
+  return nameMap[role] || '未知';
+});
+
+// 获取角色显示名称（用于成员列表）
+const getRoleDisplayName = (role) => {
+  const nameMap = {
+    'heavy': '重装',
+    'damage': '输出',
+    'support': '支援',
+    'flexible': '灵活'
+  };
+  return nameMap[role] || '未知';
+};
+
+// 获取角色图标
+const getRoleIcon = (role) => {
+  const iconMap = {
+    'heavy': '/96px-职责：重装_图标.webp',
+    'damage': '/96px-职责：输出_图标.webp',
+    'support': '/96px-职责：支援_图标.webp',
+    'flexible': ''
+  };
+  return iconMap[role] || '';
+};
+
+// 获取角色CSS类
+const getRoleClass = (role) => {
+  const classMap = {
+    'heavy': 'role-heavy',
+    'damage': 'role-damage',
+    'support': 'role-support',
+    'flexible': 'role-flexible'
+  };
+  return classMap[role] || '';
+};
+
+// 加载用户信息
+const loadUserInfo = () => {
+  const user = auth.getCurrentUser();
+  if (user) {
+    userInfo.value = user;
+  } else {
+    // 如果未登录，跳转到首页
+    window.location.hash = '';
+  }
+};
+
+// 格式化日期
+const formatDate = (dateString) => {
+  if (!dateString) return '未知';
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleString('zh-CN');
+  } catch (error) {
+    return '日期格式错误';
+  }
+};
+
+// 导航到加入战队页面
+const goToJoinTeamPage = () => {
+  window.location.hash = 'jointeam';
+};
+
+// 处理退出登录
+const handleLogout = () => {
+  if (auth.logout()) {
+    message.value = '已成功退出登录';
+    isError.value = false;
+    
+    // 2秒后跳转到首页
+    setTimeout(() => {
+      window.location.hash = '';
+    }, 2000);
+  } else {
+    message.value = '退出登录失败';
+    isError.value = true;
+  }
+};
+
+// 处理修改密码
+const handleChangePassword = () => {
+  // 验证新密码是否匹配
+  if (passwordData.newPassword !== passwordData.confirmNewPassword) {
+    passwordMessage.value = '两次输入的新密码不一致';
+    isPasswordError.value = true;
+    return;
+  }
+  
+  // 验证新密码长度
+  if (passwordData.newPassword.length < 6) {
+    passwordMessage.value = '新密码长度至少为6位';
+    isPasswordError.value = true;
+    return;
+  }
+  
+  // 获取当前用户
+  const currentUser = auth.getCurrentUser();
+  if (!currentUser) {
+    passwordMessage.value = '用户未登录';
+    isPasswordError.value = true;
+    return;
+  }
+  
+  // 这里应该调用API验证当前密码并更新密码
+  // 由于是本地存储演示，我们简化处理
+  const users = auth.getAllUsers();
+  const userIndex = users.findIndex(user => user.id === currentUser.id);
+  
+  if (userIndex === -1) {
+    passwordMessage.value = '用户不存在';
+    isPasswordError.value = true;
+    return;
+  }
+  
+  // 验证当前密码
+  if (users[userIndex].password !== passwordData.currentPassword) {
+    passwordMessage.value = '当前密码错误';
+    isPasswordError.value = true;
+    return;
+  }
+  
+  // 更新密码
+  users[userIndex].password = passwordData.newPassword;
+  users[userIndex].updatedAt = new Date().toISOString();
+  
+  if (auth.saveAllUsers(users)) {
+    passwordMessage.value = '密码修改成功！';
+    isPasswordError.value = false;
+    
+    // 清空表单
+    passwordData.currentPassword = '';
+    passwordData.newPassword = '';
+    passwordData.confirmNewPassword = '';
+    
+    // 3秒后关闭模态框
+    setTimeout(() => {
+      showChangePassword.value = false;
+      passwordMessage.value = '';
+    }, 3000);
+  } else {
+    passwordMessage.value = '密码修改失败';
+    isPasswordError.value = true;
+  }
+};
+
+// 处理注销账户
+const handleDeleteAccount = () => {
+  const currentUser = auth.getCurrentUser();
+  if (!currentUser) {
+    deleteMessage.value = '用户未登录';
+    return;
+  }
+  
+  // 验证密码
+  const users = auth.getAllUsers();
+  const user = users.find(u => u.id === currentUser.id);
+  
+  if (!user) {
+    deleteMessage.value = '用户不存在';
+    return;
+  }
+  
+  if (user.password !== deletePassword.value) {
+    deleteMessage.value = '密码错误';
+    return;
+  }
+  
+  // 删除用户
+  const result = auth.deleteUser(currentUser.id);
+  
+  if (result.success) {
+    deleteMessage.value = '账户已成功注销';
+    
+    // 3秒后跳转到首页
+    setTimeout(() => {
+      window.location.hash = '';
+    }, 3000);
+  } else {
+    deleteMessage.value = result.message || '注销失败';
+  }
+};
+
+// 加载战队信息
+const loadTeamInfo = () => {
+  const currentUser = auth.getCurrentUser();
+  if (!currentUser) return;
+  
+  const team = auth.getUserTeam(currentUser.id);
+  userTeam.value = team;
+  
+  if (team) {
+    const members = auth.getTeamMembers(team.id);
+    teamMembers.value = members;
+  } else {
+    teamMembers.value = [];
+  }
+};
+
+// 创建战队
+const handleCreateTeam = () => {
+  const currentUser = auth.getCurrentUser();
+  if (!currentUser) {
+    teamMessage.value = '用户未登录';
+    isTeamError.value = true;
+    return;
+  }
+  
+  if (!teamData.teamName.trim()) {
+    teamMessage.value = '请输入战队名称';
+    isTeamError.value = true;
+    return;
+  }
+  
+  const result = auth.createTeam(teamData.teamName.trim(), currentUser.id);
+  
+  if (result.success) {
+    teamMessage.value = '战队创建成功！';
+    isTeamError.value = false;
+    
+    // 清空表单
+    teamData.teamName = '';
+    
+    // 更新战队信息
+    loadTeamInfo();
+    
+    // 3秒后关闭模态框
+    setTimeout(() => {
+      showCreateTeam.value = false;
+      teamMessage.value = '';
+    }, 3000);
+  } else {
+    teamMessage.value = result.message || '创建战队失败';
+    isTeamError.value = true;
+  }
+};
+
+// 加入战队
+const handleJoinTeam = () => {
+  const currentUser = auth.getCurrentUser();
+  if (!currentUser) {
+    joinTeamMessage.value = '用户未登录';
+    isJoinTeamError.value = true;
+    return;
+  }
+  
+  if (!joinTeamName.value.trim()) {
+    joinTeamMessage.value = '请输入战队完整名称';
+    isJoinTeamError.value = true;
+    return;
+  }
+  
+  const result = auth.joinTeam(joinTeamName.value.trim(), currentUser.id);
+  
+  if (result.success) {
+    joinTeamMessage.value = '成功加入战队！';
+    isJoinTeamError.value = false;
+    
+    // 清空表单
+    joinTeamName.value = '';
+    
+    // 更新战队信息
+    loadTeamInfo();
+    
+    // 3秒后关闭模态框
+    setTimeout(() => {
+      showJoinTeam.value = false;
+      joinTeamMessage.value = '';
+    }, 3000);
+  } else {
+    joinTeamMessage.value = result.message || '加入战队失败';
+    isJoinTeamError.value = true;
+  }
+};
+
+// 退出战队
+const handleLeaveTeam = () => {
+  const currentUser = auth.getCurrentUser();
+  if (!currentUser) {
+    leaveTeamMessage.value = '用户未登录';
+    return;
+  }
+  
+  const result = auth.leaveTeam(currentUser.id);
+  
+  if (result.success) {
+    leaveTeamMessage.value = result.teamDeleted ? '已退出战队，战队已解散' : '已成功退出战队';
+    
+    // 更新战队信息
+    loadTeamInfo();
+    
+    // 3秒后关闭模态框
+    setTimeout(() => {
+      showLeaveConfirm.value = false;
+      leaveTeamMessage.value = '';
+    }, 3000);
+  } else {
+    leaveTeamMessage.value = result.message || '退出战队失败';
+  }
+};
+
+// 更改职责
+const handleChangeRole = () => {
+  const currentUser = auth.getCurrentUser();
+  if (!currentUser) {
+    roleMessage.value = '用户未登录';
+    isRoleError.value = true;
+    return;
+  }
+  
+  if (!selectedRole.value) {
+    roleMessage.value = '请选择一个职责';
+    isRoleError.value = true;
+    return;
+  }
+  
+  const result = auth.updateUserRole(currentUser.id, selectedRole.value);
+  
+  if (result.success) {
+    roleMessage.value = '职责更新成功！';
+    isRoleError.value = false;
+    
+    // 更新用户信息
+    loadUserInfo();
+    
+    // 3秒后关闭模态框
+    setTimeout(() => {
+      showChangeRole.value = false;
+      roleMessage.value = '';
+      selectedRole.value = '';
+    }, 3000);
+  } else {
+    roleMessage.value = result.message || '更新职责失败';
+    isRoleError.value = true;
+  }
+};
+
+// 组件挂载时加载用户信息和战队信息
+onMounted(() => {
+  loadUserInfo();
+  loadTeamInfo();
+});
+</script>
+
+<style scoped>
+.user-panel {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  padding: 20px;
+}
+
+.panel-container {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 40px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.page-title {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 2.5rem;
+  color: #333;
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: bold;
+}
+
+.user-info-section {
+  margin-bottom: 40px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.user-info-section h2 {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1.5rem;
+  color: #495057;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #4facfe;
+  padding-bottom: 10px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #dee2e63b;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #6c757d;
+}
+
+.info-value {
+  color: #212529;
+  font-weight: 500;
+  flex: 1;
+  min-width: 0; /* 防止溢出 */
+}
+
+.actions-section {
+  margin-bottom: 30px;
+}
+
+.actions-section h2 {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1.5rem;
+  color: #495057;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #4facfe;
+  padding-bottom: 10px;
+}
+
+/* 战队信息样式 */
+.team-section {
+  margin-bottom: 40px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.team-section h2 {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1.5rem;
+  color: #495057;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #4facfe;
+  padding-bottom: 10px;
+}
+
+/* 战队成员列表样式 */
+.team-members-section {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 2px solid #e9ecef;
+}
+
+.members-title {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1.2rem;
+  color: #495057;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.member-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: white;
+  border-radius: 10px;
+  border: 1px solid #e9ecef;
+  transition: all 0.2s ease;
+}
+
+.member-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #4facfe;
+}
+
+.member-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.member-name {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.member-role {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 0.9rem;
+  padding: 3px 10px;
+  border-radius: 15px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.role-heavy {
+  background-color: rgba(255, 193, 7, 0.15);
+  color: #856404;
+  border: 1px solid #ffc107;
+}
+
+.role-damage {
+  background-color: rgba(220, 53, 69, 0.15);
+  color: #721c24;
+  border: 1px solid #dc3545;
+}
+
+.role-support {
+  background-color: rgba(40, 167, 69, 0.15);
+  color: #155724;
+  border: 1px solid #28a745;
+}
+
+.role-flexible {
+  background-color: rgba(108, 117, 125, 0.15);
+  color: #495057;
+  border: 1px solid #6c757d;
+}
+
+.member-icons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.member-role-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.flexible-icons-small {
+  display: flex;
+  gap: 2px;
+}
+
+.flexible-icon-small {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.creator-badge {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 0.8rem;
+  background-color: #4facfe;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.you-badge {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 0.8rem;
+  background-color: #28a745;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.no-team {
+  text-align: center;
+  padding: 20px;
+}
+
+.no-team-message {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1.2rem;
+  color: #6c757d;
+  margin-bottom: 20px;
+}
+
+.team-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.create-team-button {
+  background-color: rgba(40, 167, 69, 0.1);
+  border: 2px solid #28a745;
+  color: #155724;
+}
+
+.create-team-button:hover {
+  background-color: #28a745;
+  color: white;
+}
+
+.join-team-button {
+  background-color: rgba(0, 123, 255, 0.1);
+  border: 2px solid #007bff;
+  color: #004085;
+}
+
+.join-team-button:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.leave-team-button {
+  background-color: rgba(220, 53, 69, 0.1);
+  border: 2px solid #dc3545;
+  color: #721c24;
+}
+
+.leave-team-button:hover {
+  background-color: #dc3545;
+  color: white;
+}
+
+.action-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.action-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  border: none;
+  border-radius: 12px;
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 120px;
+}
+
+.button-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.button-text {
+  font-weight: 600;
+}
+
+.logout-button {
+  background-color: rgba(255, 193, 7, 0.1);
+  border: 2px solid #ffc107;
+  color: #856404;
+}
+
+.logout-button:hover {
+  background-color: #ffc107;
+  color: white;
+}
+
+.change-password-button {
+  background-color: rgba(0, 123, 255, 0.1);
+  border: 2px solid #007bff;
+  color: #004085;
+}
+
+.change-password-button:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.delete-account-button {
+  background-color: rgba(220, 53, 69, 0.1);
+  border: 2px solid #dc3545;
+  color: #721c24;
+}
+
+.delete-account-button:hover {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* 模态框样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 16px;
+  padding: 30px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content h3 {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.warning-text {
+  color: #dc3545;
+  font-weight: 600;
+  text-align: center;
+  margin: 15px 0;
+}
+
+.password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.form-input {
+  padding: 12px;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: 'SmileySans Oblique', sans-serif;
+  transition: border-color 0.3s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #4facfe;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.modal-button {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-button {
+  background-color: #6c757d;
+  color: white;
+}
+
+.cancel-button:hover {
+  background-color: #5a6268;
+}
+
+.confirm-button {
+  background-color: #28a745;
+  color: white;
+}
+
+.confirm-button:hover {
+  background-color: #218838;
+}
+
+.delete-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.delete-button:hover {
+  background-color: #c82333;
+}
+
+/* 表单提示样式 */
+.form-hint {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+/* 职责相关样式 */
+.role-display {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0; /* 防止溢出 */
+}
+
+.role-icons {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.role-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  background-color: #5f6265a6;
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.flexible-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.change-role-button {
+  margin-left: 10px;
+  padding: 4px 12px;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 64px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.change-role-button:hover {
+  background-color: #5a6268;
+}
+
+.role-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.role-option {
+  padding: 15px;
+  border: 2px solid #dee2e629;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.role-option:hover {
+  border-color: #4facfe;
+  background-color: rgba(79, 172, 254, 0.05);
+}
+
+.role-option.selected {
+  border-color: #28a745;
+  background-color: rgba(40, 167, 69, 0.1);
+}
+
+.role-option-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  margin-bottom: 10px;
+  background-color: #35373998;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.flexible-icons {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.flexible-icons .role-option-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.role-option-label {
+  display: block;
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.role-option-desc {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin: 0;
+}
+
+/* 消息样式 */
+.message {
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+  text-align: center;
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-weight: 500;
+}
+
+.message:not(.error) {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+</style>
