@@ -70,6 +70,9 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const formData = reactive({
   username: '',
@@ -140,12 +143,12 @@ const handleRegister = () => {
   
   // 3秒后跳转到登录页面
   setTimeout(() => {
-    window.location.hash = '#login'
+    router.push({ name: 'Login' })
   }, 3000)
 }
 
 const goToHome = () => {
-  window.location.hash = ''
+  router.push({ name: 'Home' })
 }
 </script>
 

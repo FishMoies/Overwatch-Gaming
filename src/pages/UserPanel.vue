@@ -117,6 +117,76 @@
         </div>
       </div>
       
+      <!-- 我的帖子瀑布流 -->
+      <div class="posts-section">
+        <h2>我的帖子</h2>
+        <div class="posts-header">
+          <button class="action-button create-post-button" @click="goToCreatePost">
+            <span class="button-icon">📝</span>
+            <span class="button-text">发布新帖子</span>
+          </button>
+          <div class="posts-stats">
+            <span class="stat-item">共 {{ userPosts.length }} 篇帖子</span>
+            <span class="stat-item">获赞 {{ totalLikes }} 次</span>
+          </div>
+        </div>
+        
+        <div v-if="loadingPosts" class="loading-posts">
+          <div class="loading-spinner"></div>
+          <p>加载帖子中...</p>
+        </div>
+        
+        <div v-else-if="userPosts.length === 0" class="no-posts">
+          <p class="no-posts-message">您还没有发布过任何帖子</p>
+          <button class="create-post-button-empty" @click="goToCreatePost">
+            <span class="button-icon">📝</span>
+            <span class="button-text">发布第一篇帖子</span>
+          </button>
+        </div>
+        
+        <div v-else class="posts-waterfall">
+          <div
+            v-for="post in userPosts"
+            :key="post.id"
+            class="post-card"
+            :class="getPostCategoryClass(post.category)"
+          >
+            <div class="post-header">
+              <div class="post-category">{{ getCategoryDisplayName(post.category) }}</div>
+              <div class="post-date">{{ formatDate(post.createdAt) }}</div>
+            </div>
+            
+            <h3 class="post-title">{{ post.title }}</h3>
+            
+            <div class="post-content">
+              {{ truncateContent(post.content, 150) }}
+            </div>
+            
+            <div class="post-footer">
+              <div class="post-stats">
+                <span class="stat likes-stat">
+                  <span class="stat-icon">❤️</span>
+                  {{ post.likes }}
+                </span>
+                <span class="stat comments-stat">
+                  <span class="stat-icon">💬</span>
+                  {{ post.comments.length }}
+                </span>
+              </div>
+              
+              <div class="post-actions">
+                <button class="post-action-button view-button" @click="viewPost(post.id)">
+                  查看详情
+                </button>
+                <button class="post-action-button delete-button" @click="deletePost(post.id)">
+                  删除
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <!-- 功能按钮区域 -->
       <div class="actions-section">
         <h2>账户操作</h2>
@@ -792,10 +862,91 @@ const handleChangeRole = () => {
   }
 };
 
+// 帖子相关变量
+const userPosts = ref([]);
+const loadingPosts = ref(false);
+const totalLikes = computed(() => {
+  return userPosts.value.reduce((sum, post) => sum + post.likes, 0);
+});
+
+// 加载用户帖子
+const loadUserPosts = () => {
+  const currentUser = auth.getCurrentUser();
+  if (!currentUser) {
+    return;
+  }
+  
+  loadingPosts.value = true;
+  try {
+    // 使用auth.js中的方法获取当前用户的帖子
+    userPosts.value = auth.getCurrentUserPosts();
+  } catch (error) {
+    console.error('加载帖子失败:', error);
+  } finally {
+    loadingPosts.value = false;
+  }
+};
+
+// 跳转到发帖页面
+const goToCreatePost = () => {
+  window.location.hash = 'createpost';
+};
+
+// 查看帖子详情
+const viewPost = (postId) => {
+  // 这里可以跳转到帖子详情页面，暂时先显示一个提示
+  alert(`查看帖子ID: ${postId}\n功能开发中...`);
+};
+
+// 删除帖子
+const deletePost = (postId) => {
+  if (!confirm('确定要删除这篇帖子吗？此操作不可撤销。')) {
+    return;
+  }
+  
+  const result = auth.deletePost(postId);
+  if (result.success) {
+    // 从列表中移除已删除的帖子
+    userPosts.value = userPosts.value.filter(post => post.id !== postId);
+    message.value = '帖子删除成功';
+    isError.value = false;
+  } else {
+    message.value = result.message || '删除失败';
+    isError.value = true;
+  }
+};
+
+// 获取分类显示名称
+const getCategoryDisplayName = (category) => {
+  const categoryMap = {
+    'general': '一般讨论',
+    'team': '战队招募',
+    'strategy': '战术攻略',
+    'highlight': '精彩集锦',
+    'question': '问题求助',
+    'announcement': '公告通知'
+  };
+  return categoryMap[category] || '其他';
+};
+
+// 获取帖子分类CSS类
+const getPostCategoryClass = (category) => {
+  return `post-category-${category}`;
+};
+
+// 截断内容
+const truncateContent = (content, maxLength) => {
+  if (content.length <= maxLength) {
+    return content;
+  }
+  return content.substring(0, maxLength) + '...';
+};
+
 // 组件挂载时加载用户信息和战队信息
 onMounted(() => {
   loadUserInfo();
   loadTeamInfo();
+  loadUserPosts(); // 加载用户帖子
 });
 </script>
 
@@ -1396,5 +1547,268 @@ onMounted(() => {
   background-color: #f8d7da;
   color: #721c24;
   border: 1px solid #f5c6cb;
+}
+
+/* 帖子瀑布流样式 */
+.posts-section {
+  margin-top: 40px;
+  padding: 25px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+}
+
+.posts-section h2 {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #4facfe;
+}
+
+.posts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.create-post-button {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.create-post-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.posts-stats {
+  display: flex;
+  gap: 20px;
+}
+
+.stat-item {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1rem;
+  color: #666;
+  padding: 8px 16px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.loading-posts {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #4facfe;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.no-posts {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.no-posts-message {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.create-post-button-empty {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.create-post-button-empty:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+}
+
+.posts-waterfall {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.post-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border-left: 4px solid #4facfe;
+}
+
+.post-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.post-category-general { border-left-color: #6c757d; }
+.post-category-team { border-left-color: #28a745; }
+.post-category-strategy { border-left-color: #17a2b8; }
+.post-category-highlight { border-left-color: #ffc107; }
+.post-category-question { border-left-color: #fd7e14; }
+.post-category-announcement { border-left-color: #dc3545; }
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.post-category {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background-color: #f8f9fa;
+  color: #495057;
+}
+
+.post-date {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.post-title {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1.3rem;
+  color: #333;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.post-content {
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+.post-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 15px;
+  border-top: 1px solid #e9ecef;
+}
+
+.post-stats {
+  display: flex;
+  gap: 15px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.stat-icon {
+  font-size: 1rem;
+}
+
+.post-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.post-action-button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-button {
+  background-color: #4facfe;
+  color: white;
+}
+
+.view-button:hover {
+  background-color: #3a9bf7;
+}
+
+.delete-button {
+  background-color: #f8f9fa;
+  color: #dc3545;
+  border: 1px solid #dc3545;
+}
+
+.delete-button:hover {
+  background-color: #dc3545;
+  color: white;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .posts-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .posts-stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .posts-waterfall {
+    grid-template-columns: 1fr;
+  }
+  
+  .post-card {
+    padding: 15px;
+  }
 }
 </style>

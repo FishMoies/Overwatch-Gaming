@@ -41,7 +41,7 @@
         </div>
         
         <div class="form-footer">
-          <p>还没有账号？ <a href="#register" class="register-link">立即注册</a></p>
+          <p>还没有账号？ <router-link to="/register" class="register-link">立即注册</router-link></p>
         </div>
       </form>
       
@@ -65,6 +65,9 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const loginData = reactive({
   username: '',
@@ -125,12 +128,12 @@ const handleLogin = () => {
   
   // 3秒后跳转到首页
   setTimeout(() => {
-    window.location.hash = ''
+    router.push({ name: 'Home' })
   }, 3000)
 }
 
 const goToHome = () => {
-  window.location.hash = ''
+  router.push({ name: 'Home' })
 }
 
 // 检查是否已有登录用户

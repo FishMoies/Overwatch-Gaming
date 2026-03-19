@@ -1,27 +1,26 @@
 <template>
   <nav class="navbar">
-    <a href="#" class="brand" @click.prevent="goToHome">E426</a>
+    <router-link to="/" class="brand">E426</router-link>
     <ul class="nav-links">
-      <li><a href="#" @click.prevent="goToHome">首页</a></li>
-      <li><a href="#about">关于</a></li>
-      <li v-if="isLoggedIn"><a href="#user">用户面板</a></li>
+      <li><router-link to="/">首页</router-link></li>
+      <li><router-link to="/about">关于</router-link></li>
+      <li v-if="isLoggedIn"><router-link to="/createpost">发帖子</router-link></li>
+      <li v-if="isLoggedIn"><router-link to="/user">用户面板</router-link></li>
     </ul>
   </nav>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
 import auth from '../utils/auth.js';
 
+const router = useRouter();
 const isLoggedIn = ref(false);
 
 // 检查登录状态
 const checkLoginStatus = () => {
   isLoggedIn.value = auth.isLoggedIn();
-};
-
-const goToHome = () => {
-  window.location.hash = '';
 };
 
 onMounted(() => {

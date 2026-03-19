@@ -2,7 +2,8 @@
 const STORAGE_KEYS = {
   USERS: 'users',
   CURRENT_USER: 'currentUser',
-  TEAMS: 'teams'
+  TEAMS: 'teams',
+  POSTS: 'posts'
 };
 
 // 职责选项
@@ -520,6 +521,159 @@ export const auth = {
       return { success: true, user: users[userIndex] };
     } else {
       return { success: false, message: '更新职责失败' };
+    }
+  },
+
+  // 获取所有帖子
+  getAllPosts() {
+    try {
+      const postsJson = localStorage.getItem(STORAGE_KEYS.POSTS);
+      return postsJson ? JSON.parse(postsJson) : [];
+    } catch (error) {
+      console.error('读取帖子数据失败:', error);
+      return [];
+    }
+  },
+
+  // 保存所有帖子
+  saveAllPosts(posts) {
+    try {
+      localStorage.setItem(STORAGE_KEYS.POSTS, JSON.stringify(posts));
+      return true;
+    } catch (error) {
+      console.error('保存帖子数据失败:', error);
+      return false;
+    }
+  },
+
+  // 创建新帖子
+  createPost(postData) {
+    const posts = this.getAllPosts();
+    const currentUser = this.getCurrentUser();
+    
+    if (!currentUser) {
+      return { success: false, message: '请先登录' };
+    }
+    
+    // 创建新帖子对象
+    const newPost = {
+      id: Date.now(),
+      userId: currentUser.id,
+      username: currentUser.username,
+      title: postData.title,
+      content: postData.content,
+      category: postData.category || 'general',
+      likes: 0,
+      comments: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    // 添加到帖子列表
+    posts.unshift(newPost); // 添加到开头，最新的帖子在前
+    
+    // 保存到本地存储
+    if (this.saveAllPosts(posts)) {
+      return { success: true, post: newPost };
+    } else {
+      return { success: false, message: '发帖失败，请重试' };
+    }
+  },
+
+  // 获取用户的所有帖子
+  getUserPosts(userId) {
+    const posts = this.getAllPosts();
+    return posts.filter(post => post.userId === userId);
+  },
+
+  // 获取当前用户的帖子
+  getCurrentUserPosts() {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) {
+      return [];
+    }
+    return this.getUserPosts(currentUser.id);
+  },
+
+  // 删除帖子
+  deletePost(postId) {
+    const posts = this.getAllPosts();
+    const currentUser = this.getCurrentUser();
+    
+    if (!currentUser) {
+      return { success: false, message: '请先登录' };
+    }
+    
+    const postIndex = posts.findIndex(post => post.id === postId);
+    
+    if (postIndex === -1) {
+      return { success: false, message: '帖子不存在' };
+    }
+    
+    // 检查权限：只有帖子作者可以删除
+    if (posts[postIndex].userId !== currentUser.id) {
+      return { success: false, message: '无权删除此帖子' };
+    }
+    
+    // 删除帖子
+    posts.splice(postIndex, 1);
+    
+    if (this.saveAllPosts(posts)) {
+      return { success: true };
+    } else {
+      return { success: false, message: '删除失败' };
+    }
+  },
+
+  // 点赞帖子
+  likePost(postId) {
+    const posts = this.getAllPosts();
+    const postIndex = posts.findIndex(post => post.id === postId);
+    
+    if (postIndex === -1) {
+      return { success: false, message: '帖子不存在' };
+    }
+    
+    posts[postIndex].likes += 1;
+    posts[postIndex].updatedAt = new Date().toISOString();
+    
+    if (this.saveAllPosts(posts)) {
+      return { success: true, likes: posts[postIndex].likes };
+    } else {
+      return { success: false, message: '点赞失败' };
+    }
+  },
+
+  // 添加评论
+  addComment(postId, commentText) {
+    const posts = this.getAllPosts();
+    const currentUser = this.getCurrentUser();
+    
+    if (!currentUser) {
+      return { success: false, message: '请先登录' };
+    }
+    
+    const postIndex = posts.findIndex(post => post.id === postId);
+    
+    if (postIndex === -1) {
+      return { success: false, message: '帖子不存在' };
+    }
+    
+    const newComment = {
+      id: Date.now(),
+      userId: currentUser.id,
+      username: currentUser.username,
+      text: commentText,
+      createdAt: new Date().toISOString()
+    };
+    
+    posts[postIndex].comments.push(newComment);
+    posts[postIndex].updatedAt = new Date().toISOString();
+    
+    if (this.saveAllPosts(posts)) {
+      return { success: true, comment: newComment };
+    } else {
+      return { success: false, message: '评论失败' };
     }
   },
 
