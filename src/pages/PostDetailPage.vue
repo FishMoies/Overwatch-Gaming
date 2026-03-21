@@ -104,7 +104,7 @@
 
         <!-- 评论区域 -->
         <div class="comments-section">
-          <h3 class="comments-title">评论 ({{ post.comments.length }})</h3>
+          <h3 class="comments-title">评论 ({{ childPosts.length }})</h3>
 
           <!-- 添加评论 -->
           <div class="add-comment">
@@ -116,8 +116,8 @@
               @keydown.enter.exact.prevent="addComment"
             ></textarea>
             <div class="comment-actions">
-              <button 
-                class="submit-comment-button" 
+              <button
+                class="submit-comment-button"
                 :disabled="!newComment.trim()"
                 @click="addComment"
               >
@@ -126,32 +126,35 @@
             </div>
           </div>
 
-          <!-- 评论列表 -->
-          <div v-if="post.comments.length > 0" class="comments-list">
-            <div 
-              v-for="comment in post.comments" 
-              :key="comment.id" 
-              class="comment-item"
+          <!-- 评论列表（子帖子瀑布流） -->
+          <div v-if="childPosts.length > 0" class="comments-list waterfall-layout">
+            <div
+              v-for="childPost in childPosts"
+              :key="childPost.id"
+              class="comment-item waterfall-item"
             >
               <div class="comment-header">
                 <div class="comment-author">
                   <div class="comment-avatar">
-                    {{ comment.username.charAt(0).toUpperCase() }}
+                    {{ childPost.username.charAt(0).toUpperCase() }}
                   </div>
                   <div class="comment-author-info">
-                    <span class="comment-author-name">{{ comment.username }}</span>
-                    <span class="comment-time">{{ formatRelativeTime(comment.createdAt) }}</span>
+                    <span class="comment-author-name">{{ childPost.username }}</span>
+                    <span class="comment-time">{{ formatRelativeTime(childPost.createdAt) }}</span>
                   </div>
                 </div>
-                <button 
-                  v-if="isCommentAuthor(comment) || isPostAuthor"
+                <button
+                  v-if="isCommentAuthor(childPost) || isPostAuthor"
                   class="delete-comment-button"
-                  @click="deleteComment(comment.id)"
+                  @click="deleteComment(childPost.id)"
                 >
                   删除
                 </button>
               </div>
-              <div class="comment-content">{{ comment.text }}</div>
+              <div class="comment-content">{{ childPost.content }}</div>
+              <div class="comment-context" v-if="childPost.context">
+                <small>上下文: {{ childPost.context }}</small>
+              </div>
             </div>
           </div>
 
@@ -179,6 +182,7 @@ const router = useRouter();
 
 const postId = computed(() => route.params.id);
 const post = ref(null);
+const childPosts = ref([]); // 存储子帖子（评论）
 const loading = ref(true);
 const message = ref('');
 const isError = ref(false);
@@ -205,8 +209,12 @@ const loadPostDetail = async () => {
       // 检查当前用户是否已点赞（这里需要扩展auth.js功能）
       // 暂时设为false
       isLiked.value = false;
+      
+      // 获取帖子的所有子帖子（评论）
+      childPosts.value = auth.getChildPosts(postId.value);
     } else {
       post.value = null;
+      childPosts.value = [];
     }
   } catch (error) {
     console.error('加载帖子失败:', error);
@@ -332,7 +340,7 @@ const focusCommentInput = () => {
 };
 
 // 添加评论
-const addComment = () => {
+const addComment = async () => {
   if (!auth.isLoggedIn()) {
     message.value = '请先登录';
     isError.value = true;
@@ -352,27 +360,28 @@ const addComment = () => {
     return;
   }
   
-  // 创建新评论
-  const newCommentObj = {
-    id: Date.now(),
-    userId: currentUser.id,
-    username: currentUser.username,
-    text: newComment.value.trim(),
-    createdAt: new Date().toISOString()
-  };
-  
-  // 添加到帖子评论列表
-  post.value.comments.unshift(newCommentObj);
-  post.value.updatedAt = new Date().toISOString();
-  
-  // 清空输入框
-  newComment.value = '';
-  
-  message.value = '评论发布成功';
-  isError.value = false;
-  
-  // 这里应该保存到数据库
-  // 暂时只更新本地状态
+  try {
+    // 使用auth.js的addComment函数创建子帖子
+    const result = auth.addComment(postId.value, newComment.value.trim());
+    
+    if (result.success) {
+      // 将新创建的子帖子添加到子帖子列表的开头
+      childPosts.value.unshift(result.comment);
+      
+      // 清空输入框
+      newComment.value = '';
+      
+      message.value = '评论发布成功';
+      isError.value = false;
+    } else {
+      message.value = result.message || '评论失败';
+      isError.value = true;
+    }
+  } catch (error) {
+    console.error('评论失败:', error);
+    message.value = '评论失败，请重试';
+    isError.value = true;
+  }
 };
 
 // 检查是否是评论作者
@@ -381,21 +390,30 @@ const isCommentAuthor = (comment) => {
   return currentUser && comment.userId === currentUser.id;
 };
 
-// 删除评论
+// 删除评论（子帖子）
 const deleteComment = (commentId) => {
   if (!confirm('确定要删除这条评论吗？')) {
     return;
   }
   
-  const commentIndex = post.value.comments.findIndex(c => c.id === commentId);
-  if (commentIndex !== -1) {
-    post.value.comments.splice(commentIndex, 1);
-    post.value.updatedAt = new Date().toISOString();
-    
-    message.value = '评论删除成功';
-    isError.value = false;
-    
-    // 这里应该保存到数据库
+  try {
+    // 从子帖子列表中移除
+    const commentIndex = childPosts.value.findIndex(c => c.id === commentId);
+    if (commentIndex !== -1) {
+      childPosts.value.splice(commentIndex, 1);
+      
+      // 这里应该调用API删除帖子
+      // 暂时只更新本地状态
+      message.value = '评论删除成功';
+      isError.value = false;
+    } else {
+      message.value = '评论不存在';
+      isError.value = true;
+    }
+  } catch (error) {
+    console.error('删除评论失败:', error);
+    message.value = '删除失败，请重试';
+    isError.value = true;
   }
 };
 
@@ -917,6 +935,42 @@ onMounted(() => {
   border: 1px solid #f5c6cb;
 }
 
+/* 瀑布流布局 */
+.waterfall-layout {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.waterfall-item {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.waterfall-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.comment-context {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #ced4da;
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.comment-context small {
+  font-family: 'SmileySans Oblique', sans-serif;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .post-detail-container {
@@ -929,6 +983,10 @@ onMounted(() => {
   
   .post-actions {
     flex-wrap: wrap;
+  }
+  
+  .waterfall-layout {
+    grid-template-columns: 1fr;
   }
   
   .action-button {

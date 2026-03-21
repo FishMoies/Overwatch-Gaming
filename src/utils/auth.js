@@ -632,6 +632,8 @@ export const auth = {
       category: postData.category || 'general',
       likes: 0,
       comments: [],
+      context: postData.parentId ? `${postData.parentId}/#` : '#', // 添加上下文属性
+      parentId: postData.parentId || null, // 父帖子ID，如果是子帖子
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -662,6 +664,27 @@ export const auth = {
     return this.getUserPosts(currentUser.id);
   },
 
+  // 获取帖子的所有子帖子（评论）
+  getChildPosts(postId) {
+    const posts = this.getAllPosts();
+    const numericPostId = Number(postId);
+    return posts.filter(post => post.parentId === numericPostId);
+  },
+
+  // 获取帖子及其所有子帖子
+  getPostWithChildren(postId) {
+    const post = this.getPostById(postId);
+    if (!post) {
+      return null;
+    }
+    
+    const childPosts = this.getChildPosts(postId);
+    return {
+      ...post,
+      childPosts: childPosts
+    };
+  },
+
   // 根据帖子ID获取帖子详情
   getPostById(postId) {
     const posts = this.getAllPosts();
@@ -684,7 +707,8 @@ export const auth = {
       return { success: false, message: '请先登录' };
     }
     
-    const postIndex = posts.findIndex(post => post.id === postId);
+    const numericPostId = Number(postId);
+    const postIndex = posts.findIndex(post => post.id === numericPostId);
     
     if (postIndex === -1) {
       return { success: false, message: '帖子不存在' };
@@ -708,7 +732,8 @@ export const auth = {
   // 点赞帖子
   likePost(postId) {
     const posts = this.getAllPosts();
-    const postIndex = posts.findIndex(post => post.id === postId);
+    const numericPostId = Number(postId);
+    const postIndex = posts.findIndex(post => post.id === numericPostId);
     
     if (postIndex === -1) {
       return { success: false, message: '帖子不存在' };
@@ -724,7 +749,7 @@ export const auth = {
     }
   },
 
-  // 添加评论
+  // 添加评论（创建子帖子）
   addComment(postId, commentText) {
     const posts = this.getAllPosts();
     const currentUser = this.getCurrentUser();
@@ -733,25 +758,36 @@ export const auth = {
       return { success: false, message: '请先登录' };
     }
     
-    const postIndex = posts.findIndex(post => post.id === postId);
+    // 将postId转换为数字进行比较
+    const numericPostId = Number(postId);
+    const parentPostIndex = posts.findIndex(post => post.id === numericPostId);
     
-    if (postIndex === -1) {
+    if (parentPostIndex === -1) {
       return { success: false, message: '帖子不存在' };
     }
     
-    const newComment = {
+    // 创建子帖子（评论）
+    const childPost = {
       id: Date.now(),
       userId: currentUser.id,
       username: currentUser.username,
-      text: commentText,
-      createdAt: new Date().toISOString()
+      title: `回复: ${posts[parentPostIndex].title.substring(0, 30)}...`, // 简化的标题
+      content: commentText,
+      category: 'comment', // 特殊分类表示评论
+      likes: 0,
+      comments: [],
+      context: `${numericPostId}/#`, // 上下文属性：父帖子id/#
+      parentId: numericPostId, // 父帖子ID（数字类型）
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
     
-    posts[postIndex].comments.push(newComment);
-    posts[postIndex].updatedAt = new Date().toISOString();
+    // 添加到帖子列表
+    posts.unshift(childPost);
     
+    // 保存到本地存储
     if (this.saveAllPosts(posts)) {
-      return { success: true, comment: newComment };
+      return { success: true, comment: childPost };
     } else {
       return { success: false, message: '评论失败' };
     }
