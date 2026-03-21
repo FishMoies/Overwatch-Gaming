@@ -70,9 +70,23 @@
               <div v-for="member in teamMembers" :key="member.id" class="member-item">
                 <div class="member-info">
                   <span class="member-name">{{ member.username }}</span>
-                  <span class="member-role" :class="getRoleClass(member.role)">
-                    {{ getRoleDisplayName(member.role) }}
-                  </span>
+                  <div class="member-roles-container">
+                    <template v-if="Array.isArray(member.role) && member.role.length > 1">
+                      <span
+                        v-for="(role, index) in member.role"
+                        :key="index"
+                        class="member-role"
+                        :class="getRoleClass(role)"
+                      >
+                        {{ getRoleDisplayName(role) }}
+                      </span>
+                    </template>
+                    <template v-else>
+                      <span class="member-role" :class="getRoleClass(member.role)">
+                        {{ getRoleDisplayName(member.role) }}
+                      </span>
+                    </template>
+                  </div>
                 </div>
                 <div class="member-icons">
                   <img
@@ -697,6 +711,15 @@ const getRoleClass = (role) => {
     'support': 'role-support',
     'flexible': 'role-flexible'
   };
+  
+  // 处理数组情况：如果是数组，返回第一个角色的类
+  if (Array.isArray(role)) {
+    if (role.length === 0) return '';
+    // 如果是灵活角色，返回灵活类
+    if (role.includes('flexible')) return 'role-flexible';
+    return classMap[role[0]] || '';
+  }
+  
   return classMap[role] || '';
 };
 
@@ -1250,6 +1273,13 @@ onMounted(() => {
   font-size: 1.1rem;
   font-weight: 600;
   color: #333;
+}
+
+.member-roles-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
 }
 
 .member-role {
