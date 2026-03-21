@@ -662,6 +662,19 @@ export const auth = {
     return this.getUserPosts(currentUser.id);
   },
 
+  // 根据帖子ID获取帖子详情
+  getPostById(postId) {
+    const posts = this.getAllPosts();
+    const post = posts.find(p => p.id === Number(postId));
+    
+    if (!post) {
+      return null;
+    }
+    
+    // 返回帖子详情（深拷贝避免修改原始数据）
+    return JSON.parse(JSON.stringify(post));
+  },
+
   // 删除帖子
   deletePost(postId) {
     const posts = this.getAllPosts();

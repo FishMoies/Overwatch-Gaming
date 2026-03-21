@@ -7,6 +7,9 @@
       <li v-if="isLoggedIn"><router-link to="/createpost">发帖子</router-link></li>
       <li v-if="isLoggedIn"><router-link to="/user">用户面板</router-link></li>
     </ul>
+    <div class="nav-actions">
+      <SearchInput />
+    </div>
   </nav>
 </template>
 
@@ -14,6 +17,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import auth from '../utils/auth.js';
+import SearchInput from './SearchInput.vue';
 
 const router = useRouter();
 const isLoggedIn = ref(false);
@@ -86,6 +90,12 @@ onUnmounted(() => {
 
 .nav-links a:hover {
   text-decoration: underline;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .nav-button {

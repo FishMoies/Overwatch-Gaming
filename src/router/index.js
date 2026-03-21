@@ -5,6 +5,8 @@ import LoginPage from '../pages/LoginPage.vue'
 import UserPanel from '../pages/UserPanel.vue'
 import JoinTeamPage from '../pages/JoinTeamPage.vue'
 import CreatePostPage from '../pages/CreatePostPage.vue'
+import PostDetailPage from '../pages/PostDetailPage.vue'
+import SearchPage from '../pages/SearchPage.vue'
 import auth from '../utils/auth.js'
 
 const routes = [
@@ -60,6 +62,16 @@ const routes = [
     component: CreatePostPage,
     meta: { requiresAuth: true }
   },
+  {
+    path: '/post/:id',
+    name: 'PostDetail',
+    component: PostDetailPage
+  },
+  {
+    path: '/search',
+    name: 'Search',
+    component: SearchPage
+  },
   // 重定向旧hash路由到新路由
   {
     path: '/#:hash',
@@ -78,6 +90,7 @@ const routes = [
         case 'jointeam': return '/jointeam'
         case 'createpost': return '/createpost'
         case 'about': return '/about'
+        case 'search': return '/search'
         default: return '/'
       }
     }

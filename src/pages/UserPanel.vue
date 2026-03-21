@@ -1,7 +1,15 @@
 <template>
   <div class="user-panel page-enter-active">
     <div class="panel-container">
-      <h1 class="page-title">用户面板</h1>
+      <div class="header-section">
+        <button class="back-button" @click="handleBack">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+          </svg>
+          返回
+        </button>
+        <h1 class="page-title">用户面板</h1>
+      </div>
       
       <!-- 用户信息展示 -->
       <div class="user-info-section">
@@ -35,15 +43,15 @@
               <span class="info-label">战队名称：</span>
               <span class="info-value">{{ userTeam.name }}</span>
             </div>
-            <div class="info-item">
+            <div class="info-item" v-if="isViewingOwnProfile">
               <span class="info-label">创建时间：</span>
               <span class="info-value">{{ formatDate(userTeam.createdAt) }}</span>
             </div>
-            <div class="info-item">
+            <div class="info-item" v-if="isViewingOwnProfile">
               <span class="info-label">成员数量：</span>
               <span class="info-value">{{ teamMembers.length }} 人</span>
             </div>
-            <div class="info-item">
+            <div class="info-item" v-if="isViewingOwnProfile">
               <span class="info-label">您的身份：</span>
               <span class="info-value">{{ userTeam.creatorId === userInfo.id ? '创建者' : '成员' }}</span>
             </div>
@@ -58,13 +66,13 @@
                   <div v-else class="no-role">未设置</div>
                 </div>
                 {{ roleDisplayName }}
-                <button class="change-role-button" @click="showChangeRole = true">更改</button>
+                <button class="change-role-button" @click="showChangeRole = true" v-if="isViewingOwnProfile">更改</button>
               </span>
             </div>
           </div>
           
-          <!-- 战队成员列表 -->
-          <div class="team-members-section" v-if="teamMembers.length > 0">
+          <!-- 战队成员列表 - 仅自己可见 -->
+          <div class="team-members-section" v-if="teamMembers.length > 0 && isViewingOwnProfile">
             <h3 class="members-title">战队成员 ({{ teamMembers.length }}/6)</h3>
             <div class="members-list">
               <div v-for="member in teamMembers" :key="member.id" class="member-item">
@@ -107,7 +115,8 @@
             </div>
           </div>
 
-          <div class="team-actions">
+          <!-- 退出战队按钮 - 仅自己可见 -->
+          <div class="team-actions" v-if="isViewingOwnProfile">
             <button class="action-button leave-team-button" @click="showLeaveConfirm = true">
               <span class="button-icon">🚪</span>
               <span class="button-text">退出战队</span>
@@ -116,8 +125,8 @@
         </div>
         
         <div v-else class="no-team">
-          <p class="no-team-message">您尚未加入任何战队</p>
-          <div class="team-actions">
+          <p class="no-team-message">{{ isViewingOwnProfile ? '您尚未加入任何战队' : '该用户尚未加入任何战队' }}</p>
+          <div class="team-actions" v-if="isViewingOwnProfile">
             <button class="action-button create-team-button" @click="showCreateTeam = true">
               <span class="button-icon">🏆</span>
               <span class="button-text">创建战队</span>
@@ -130,8 +139,8 @@
         </div>
       </div>
       
-      <!-- 我的帖子瀑布流 -->
-      <div class="posts-section">
+      <!-- 我的帖子瀑布流 - 仅自己可见 -->
+      <div class="posts-section" v-if="isViewingOwnProfile">
         <h2>我的帖子</h2>
         <div class="posts-header">
           <button class="action-button create-post-button" @click="goToCreatePost">
@@ -200,8 +209,8 @@
         </div>
       </div>
       
-      <!-- 功能按钮区域 -->
-      <div class="actions-section">
+      <!-- 功能按钮区域 - 仅自己可见 -->
+      <div class="actions-section" v-if="isViewingOwnProfile">
         <h2>账户操作</h2>
         <div class="action-buttons">
           <button class="action-button logout-button" @click="handleLogout">
@@ -1086,8 +1095,8 @@ const goToCreatePost = () => {
 
 // 查看帖子详情
 const viewPost = (postId) => {
-  // 这里可以跳转到帖子详情页面，暂时先显示一个提示
-  alert(`查看帖子ID: ${postId}\n功能开发中...`);
+  // 跳转到帖子详情页面
+  router.push({ name: 'PostDetail', params: { id: postId } });
 };
 
 // 删除帖子
@@ -1134,11 +1143,35 @@ const truncateContent = (content, maxLength) => {
   return content.substring(0, maxLength) + '...';
 };
 
+// 计算是否是查看自己的资料
+const isViewingOwnProfile = computed(() => {
+  const currentUser = auth.getCurrentUser();
+  return currentUser && currentUser.id === userInfo.value.id;
+});
+
+// 处理返回按钮
+const handleBack = () => {
+  if (isViewingOwnProfile.value) {
+    // 查看自己的资料，返回首页
+    router.push({ name: 'Home' });
+  } else {
+    // 查看他人资料，返回上一页
+    router.go(-1);
+  }
+};
+
 // 组件挂载时加载用户信息和战队信息
 onMounted(() => {
   loadUserInfo();
   loadTeamInfo();
-  loadUserPosts(); // 加载用户帖子
+  
+  // 使用setTimeout确保userInfo已加载
+  setTimeout(() => {
+    const currentUser = auth.getCurrentUser();
+    if (currentUser && currentUser.id === userInfo.value.id) {
+      loadUserPosts(); // 只有查看自己的资料时才加载帖子
+    }
+  }, 100);
 });
 </script>
 
@@ -1161,12 +1194,47 @@ onMounted(() => {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
+.header-section {
+  position: relative;
+  margin-bottom: 30px;
+}
+
+.back-button {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #f8f9fa;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1rem;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: #e9ecef;
+  border-color: #4facfe;
+  color: #4facfe;
+}
+
+.back-button svg {
+  width: 16px;
+  height: 16px;
+}
+
 .page-title {
   font-family: 'SmileySans Oblique', sans-serif;
   font-size: 2.5rem;
   color: #333;
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 0;
   font-weight: bold;
 }
 
