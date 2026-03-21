@@ -499,7 +499,12 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import auth from '../utils/auth.js';
+
+const route = useRoute();
+const router = useRouter();
+const uid = computed(() => route.params.uid);
 
 const userInfo = ref({});
 const message = ref('');
@@ -725,12 +730,28 @@ const getRoleClass = (role) => {
 
 // 加载用户信息
 const loadUserInfo = () => {
-  const user = auth.getCurrentUser();
-  if (user) {
-    userInfo.value = user;
+  const targetUid = uid.value;
+  
+  if (targetUid) {
+    // 通过用户ID获取用户信息
+    const user = auth.getUserById(targetUid);
+    if (user) {
+      userInfo.value = user;
+    } else {
+      // 用户不存在
+      message.value = '用户不存在';
+      isError.value = true;
+      // 可以跳转到404页面或返回
+    }
   } else {
-    // 如果未登录，跳转到首页
-    router.push({ name: 'Home' });
+    // 如果没有提供用户ID，使用当前登录用户
+    const currentUser = auth.getCurrentUser();
+    if (currentUser) {
+      userInfo.value = currentUser;
+    } else {
+      // 如果未登录，跳转到登录页面
+      router.push({ name: 'Login' });
+    }
   }
 };
 

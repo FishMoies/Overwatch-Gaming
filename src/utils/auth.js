@@ -207,6 +207,27 @@ export const auth = {
     return user ? user.username : null;
   },
 
+  // 根据用户ID获取用户信息
+  getUserById(userId) {
+    const users = this.getAllUsers();
+    const user = users.find(u => u.id === Number(userId));
+    
+    if (!user) {
+      return null;
+    }
+    
+    // 返回用户信息（不包含密码）
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: Array.isArray(user.role) ? user.role : [user.role || 'flexible'],
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+      teamId: user.teamId || null
+    };
+  },
+
   // 注销
   logout() {
     try {

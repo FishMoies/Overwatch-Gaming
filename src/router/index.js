@@ -31,10 +31,22 @@ const routes = [
     component: LoginPage
   },
   {
-    path: '/user',
-    name: 'User',
+    path: '/user/:uid',
+    name: 'UserProfile',
     component: UserPanel,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/user',
+    name: 'User',
+    redirect: to => {
+      const currentUser = auth.getCurrentUser();
+      if (currentUser) {
+        return { name: 'UserProfile', params: { uid: currentUser.id } };
+      } else {
+        return '/login';
+      }
+    }
   },
   {
     path: '/jointeam',
@@ -56,7 +68,13 @@ const routes = [
       switch(hash) {
         case 'register': return '/register'
         case 'login': return '/login'
-        case 'user': return '/user'
+        case 'user':
+          const currentUser = auth.getCurrentUser();
+          if (currentUser) {
+            return { name: 'UserProfile', params: { uid: currentUser.id } };
+          } else {
+            return '/login';
+          }
         case 'jointeam': return '/jointeam'
         case 'createpost': return '/createpost'
         case 'about': return '/about'
