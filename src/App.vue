@@ -1,18 +1,19 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useUserStore } from './stores/user.js'
 import NavBar from './components/NavBar.vue'
-import auth from './utils/auth.js'
 import fullpage from 'fullpage.js'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 const isLoggedIn = ref(false)
 let fpInstance = null
 
 // 检查登录状态
 const checkLoginStatus = () => {
-  isLoggedIn.value = auth.isLoggedIn()
+  isLoggedIn.value = userStore.isLoggedIn
 }
 
 // 导航函数

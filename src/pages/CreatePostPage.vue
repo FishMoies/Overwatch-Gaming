@@ -65,9 +65,10 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '../stores/user.js'
 
 const router = useRouter()
-import auth from '../utils/auth.js'
+const userStore = useUserStore()
 
 const formData = reactive({
   title: '',
@@ -81,7 +82,7 @@ const isSubmitting = ref(false)
 
 // 检查用户是否已登录
 onMounted(() => {
-  const currentUser = auth.getCurrentUser()
+  const currentUser = userStore.getCurrentUser()
   if (!currentUser) {
     message.value = '请先登录后再发帖'
     isError.value = true
@@ -120,7 +121,7 @@ const handleCreatePost = async () => {
   message.value = ''
   
   try {
-    const result = auth.createPost({
+    const result = userStore.createPost({
       title: formData.title.trim(),
       category: formData.category,
       content: formData.content.trim()

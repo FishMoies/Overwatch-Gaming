@@ -71,8 +71,10 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '../stores/user.js'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 const formData = reactive({
   username: '',
@@ -99,37 +101,18 @@ const handleRegister = () => {
     return
   }
   
-  // 从本地存储获取已注册用户
-  const users = JSON.parse(localStorage.getItem('users') || '[]')
-  
-  // 检查用户名是否已存在
-  const existingUser = users.find(user => user.username === formData.username)
-  if (existingUser) {
-    message.value = '用户名已存在'
-    isError.value = true
-    return
-  }
-  
-  // 检查邮箱是否已存在
-  const existingEmail = users.find(user => user.email === formData.email)
-  if (existingEmail) {
-    message.value = '邮箱已被注册'
-    isError.value = true
-    return
-  }
-  
-  // 创建新用户
-  const newUser = {
-    id: Date.now(),
+  // 使用Pinia存储进行注册
+  const result = userStore.registerUser({
     username: formData.username,
     email: formData.email,
-    password: formData.password,
-    createdAt: new Date().toISOString()
-  }
+    password: formData.password
+  })
   
-  // 保存到本地存储
-  users.push(newUser)
-  localStorage.setItem('users', JSON.stringify(users))
+  if (!result.success) {
+    message.value = result.message
+    isError.value = true
+    return
+  }
   
   // 显示成功消息
   message.value = '注册成功！即将跳转到登录页面...'

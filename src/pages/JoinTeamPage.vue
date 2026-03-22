@@ -226,7 +226,9 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
-import auth from '../utils/auth.js';
+import { useUserStore } from '../stores/user.js';
+
+const userStore = useUserStore();
 
 // 状态变量
 const loading = ref(true);
@@ -250,11 +252,10 @@ const teamMembers = ref([]);
 
 // 计算属性：用户是否已在战队中
 const isUserInTeam = computed(() => {
-  const currentUser = auth.getCurrentUser();
+  const currentUser = userStore.getCurrentUser();
   if (!currentUser) return false;
   
-  const users = auth.getAllUsers();
-  const user = users.find(u => u.id === currentUser.id);
+  const user = userStore.users.find(u => u.id === currentUser.id);
   return user && user.teamId;
 });
 
@@ -264,10 +265,10 @@ const loadTeams = () => {
   
   try {
     // 获取所有战队
-    const allTeams = auth.getAllTeams();
+    const allTeams = userStore.teams;
     
     // 获取所有用户以获取创建者名称
-    const users = auth.getAllUsers();
+    const users = userStore.users;
     
     // 处理战队数据，添加额外信息
     const processedTeams = allTeams.map(team => {
@@ -451,7 +452,7 @@ const showTeamDetails = async (team) => {
   
   try {
     // 加载战队成员
-    const users = auth.getAllUsers();
+    const users = userStore.users;
     const members = users.filter(user => user.teamId === team.id);
     teamMembers.value = members;
     

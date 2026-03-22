@@ -13,17 +13,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import auth from '../utils/auth.js';
+import { useUserStore } from '../stores/user.js';
 import SearchInput from './SearchInput.vue';
 
 const router = useRouter();
-const isLoggedIn = ref(false);
+const userStore = useUserStore();
 
-// 检查登录状态
+// 使用计算属性获取登录状态
+const isLoggedIn = computed(() => userStore.isLoggedIn);
+
+// 检查登录状态（兼容旧代码）
 const checkLoginStatus = () => {
-  isLoggedIn.value = auth.isLoggedIn();
+  // 计算属性会自动更新，这里不需要额外操作
 };
 
 onMounted(() => {

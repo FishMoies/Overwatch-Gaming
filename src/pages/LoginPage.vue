@@ -66,8 +66,10 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '../stores/user.js'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 const loginData = reactive({
   username: '',
@@ -80,23 +82,11 @@ const message = ref('')
 const isError = ref(false)
 
 const handleLogin = () => {
-  // 从本地存储获取用户数据
-  const users = JSON.parse(localStorage.getItem('users') || '[]')
+  // 使用Pinia存储进行登录
+  const result = userStore.login(loginData.username, loginData.password, rememberMe.value)
   
-  // 查找用户（支持用户名或邮箱登录）
-  const user = users.find(u => 
-    u.username === loginData.username || u.email === loginData.username
-  )
-  
-  if (!user) {
-    message.value = '用户不存在'
-    isError.value = true
-    return
-  }
-  
-  // 验证密码
-  if (user.password !== loginData.password) {
-    message.value = '密码错误'
+  if (!result.success) {
+    message.value = result.message
     isError.value = true
     return
   }
@@ -104,23 +94,6 @@ const handleLogin = () => {
   // 登录成功
   message.value = '登录成功！'
   isError.value = false
-  
-  // 保存登录状态到本地存储
-  const userSession = {
-    id: user.id,
-    username: user.username,
-    email: user.email,
-    loggedIn: true,
-    loginTime: new Date().toISOString()
-  }
-  
-  if (rememberMe.value) {
-    // 长期保存（30天）
-    localStorage.setItem('currentUser', JSON.stringify(userSession))
-  } else {
-    // 会话级保存
-    sessionStorage.setItem('currentUser', JSON.stringify(userSession))
-  }
   
   // 清空表单
   loginData.username = ''
@@ -136,13 +109,9 @@ const goToHome = () => {
 
 // 检查是否已有登录用户
 const checkExistingLogin = () => {
-  const currentUser = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser')
-  if (currentUser) {
-    const user = JSON.parse(currentUser)
-    if (user.loggedIn) {
-      message.value = `欢迎回来，${user.username}！`
-      isError.value = false
-    }
+  if (userStore.isLoggedIn) {
+    message.value = `欢迎回来，${userStore.currentUsername}！`
+    isError.value = false
   }
 }
 

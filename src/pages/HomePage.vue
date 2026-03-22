@@ -1,16 +1,17 @@
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import auth from '../utils/auth.js'
+import { useUserStore } from '../stores/user.js'
 import fullpage from 'fullpage.js'
 
 const router = useRouter()
-const isLoggedIn = ref(false)
+const userStore = useUserStore()
+const isLoggedIn = computed(() => userStore.isLoggedIn)
 let fpInstance = null
 
-// 检查登录状态
+// 检查登录状态（兼容旧代码）
 const checkLoginStatus = () => {
-  isLoggedIn.value = auth.isLoggedIn()
+  // 计算属性会自动更新
 }
 
 // 导航函数
