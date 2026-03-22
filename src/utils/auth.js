@@ -649,19 +649,34 @@ export const auth = {
     }
   },
 
-  // 获取用户的所有帖子
+  // 获取用户的所有帖子（包括回复和评论）
   getUserPosts(userId) {
     const posts = this.getAllPosts();
     return posts.filter(post => post.userId === userId);
   },
 
-  // 获取当前用户的帖子
+  // 获取用户的主帖子（不包括回复和评论）
+  getUserMainPosts(userId) {
+    const posts = this.getAllPosts();
+    return posts.filter(post => post.userId === userId && (post.parentId === null || post.parentId === undefined));
+  },
+
+  // 获取当前用户的帖子（包括回复和评论）
   getCurrentUserPosts() {
     const currentUser = this.getCurrentUser();
     if (!currentUser) {
       return [];
     }
     return this.getUserPosts(currentUser.id);
+  },
+
+  // 获取当前用户的主帖子（不包括回复和评论）
+  getCurrentUserMainPosts() {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) {
+      return [];
+    }
+    return this.getUserMainPosts(currentUser.id);
   },
 
   // 获取帖子的所有子帖子（评论）

@@ -1079,8 +1079,8 @@ const loadUserPosts = () => {
   
   loadingPosts.value = true;
   try {
-    // 使用auth.js中的方法获取当前用户的帖子
-    userPosts.value = auth.getCurrentUserPosts();
+    // 使用auth.js中的方法获取当前用户的主帖子（不包括回复和评论）
+    userPosts.value = auth.getCurrentUserMainPosts();
   } catch (error) {
     console.error('加载帖子失败:', error);
   } finally {

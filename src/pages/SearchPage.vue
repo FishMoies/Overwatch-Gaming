@@ -53,7 +53,7 @@
         <div v-else>
           <!-- 帖子搜索结果 -->
           <div v-if="activeTab === 'posts'" class="posts-results">
-            <div v-for="post in posts" :key="post.id" class="post-card">
+            <div v-for="post in posts" :key="post.id" class="post-card" @click="viewPostDetail(post.id)">
               <div class="post-header">
                 <span class="post-id">#{{ post.id }}</span>
                 <span class="post-title">{{ post.title }}</span>
@@ -62,6 +62,9 @@
               <div class="post-footer">
                 <span class="post-author">作者: {{ post.author }}</span>
                 <span class="post-date">{{ post.date }}</span>
+                <button class="view-detail-button" @click.stop="viewPostDetail(post.id)">
+                  查看详情
+                </button>
               </div>
             </div>
           </div>
@@ -141,10 +144,13 @@ const performSearch = () => {
     const query = searchQuery.value.toLowerCase().trim()
     
     if (activeTab.value === 'posts') {
-      // 搜索帖子
+      // 搜索帖子 - 过滤掉回复和评论（parentId为null或undefined的才是主帖子）
       const allPosts = auth.getAllPosts()
       posts.value = allPosts.filter(post => {
-        return (
+        // 只显示主帖子（parentId为null或undefined）
+        const isMainPost = post.parentId === null || post.parentId === undefined
+        
+        return isMainPost && (
           post.id.toString().includes(query) ||
           post.title.toLowerCase().includes(query) ||
           post.username.toLowerCase().includes(query) ||
@@ -180,6 +186,11 @@ const performSearch = () => {
 // 查看用户资料
 const viewProfile = (uid) => {
   router.push({ name: 'UserProfile', params: { uid } })
+}
+
+// 查看帖子详情
+const viewPostDetail = (postId) => {
+  router.push({ name: 'PostDetail', params: { id: postId } })
 }
 
 // 监听标签切换
@@ -314,11 +325,22 @@ watch(activeTab, () => {
   border: 1px solid #eee;
   border-radius: 8px;
   padding: 16px;
-  transition: box-shadow 0.3s;
+  transition: all 0.3s;
+  cursor: pointer;
+  position: relative;
+  background-color: white;
 }
 
 .post-card:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.15);
+  transform: translateY(-3px);
+  border-color: #667eea;
+  background-color: #f9fafc;
+}
+
+.post-card:active {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(102, 126, 234, 0.2);
 }
 
 .post-header {
@@ -351,8 +373,24 @@ watch(activeTab, () => {
 .post-footer {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 14px;
   color: #999;
+}
+
+.view-detail-button {
+  background-color: #667eea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.view-detail-button:hover {
+  background-color: #5a67d8;
 }
 
 .user-card {

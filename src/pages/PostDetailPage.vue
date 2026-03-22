@@ -102,6 +102,40 @@
           </button>
         </div>
 
+        <!-- 父帖子显示区域（如果当前帖子是评论/回复） -->
+        <div v-if="isComment && parentPost" class="parent-post-section">
+          <h3 class="parent-post-title">
+            <span class="parent-post-icon">↶</span>
+            对以下帖子的回复
+          </h3>
+          <div class="parent-post-card">
+            <div class="parent-post-header">
+              <div class="parent-post-category" :class="getPostCategoryClass(parentPost.category)">
+                {{ getCategoryDisplayName(parentPost.category) }}
+              </div>
+              <div class="parent-post-date">{{ formatDate(parentPost.createdAt) }}</div>
+            </div>
+            <h4 class="parent-post-title-text">{{ parentPost.title }}</h4>
+            <div class="parent-post-author">
+              <div class="parent-post-avatar">
+                {{ parentPost.username.charAt(0).toUpperCase() }}
+              </div>
+              <div class="parent-post-author-info">
+                <span class="parent-post-author-name">{{ parentPost.username }}</span>
+                <span class="parent-post-time">{{ formatRelativeTime(parentPost.createdAt) }}</span>
+              </div>
+            </div>
+            <div class="parent-post-content-preview">
+              {{ parentPost.content.substring(0, 150) }}{{ parentPost.content.length > 150 ? '...' : '' }}
+            </div>
+            <div class="parent-post-actions">
+              <button class="parent-post-view-button" @click="goToParentPost(parentPost.id)">
+                查看原帖
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- 评论区域 -->
         <div class="comments-section">
           <h3 class="comments-title">评论 ({{ childPosts.length }})</h3>
@@ -182,12 +216,18 @@ const router = useRouter();
 
 const postId = computed(() => route.params.id);
 const post = ref(null);
+const parentPost = ref(null); // 存储父帖子（如果当前帖子是评论/回复）
 const childPosts = ref([]); // 存储子帖子（评论）
 const loading = ref(true);
 const message = ref('');
 const isError = ref(false);
 const newComment = ref('');
 const isLiked = ref(false);
+
+// 检查当前帖子是否为评论/回复
+const isComment = computed(() => {
+  return post.value && post.value.parentId !== null && post.value.parentId !== undefined;
+});
 
 // 检查当前用户是否是帖子作者
 const isPostAuthor = computed(() => {
@@ -199,6 +239,7 @@ const isPostAuthor = computed(() => {
 const loadPostDetail = async () => {
   loading.value = true;
   message.value = '';
+  parentPost.value = null; // 重置父帖子
   
   try {
     // 使用auth.js的getPostById函数获取帖子详情
@@ -212,6 +253,11 @@ const loadPostDetail = async () => {
       
       // 获取帖子的所有子帖子（评论）
       childPosts.value = auth.getChildPosts(postId.value);
+      
+      // 如果当前帖子是评论/回复，获取父帖子
+      if (foundPost.parentId) {
+        parentPost.value = auth.getPostById(foundPost.parentId);
+      }
     } else {
       post.value = null;
       childPosts.value = [];
@@ -438,6 +484,11 @@ const deletePost = () => {
     message.value = result.message || '删除失败';
     isError.value = true;
   }
+};
+
+// 跳转到父帖子
+const goToParentPost = (parentId) => {
+  router.push({ name: 'PostDetail', params: { id: parentId } });
 };
 
 // 组件挂载时加载帖子详情
@@ -969,6 +1020,143 @@ onMounted(() => {
 
 .comment-context small {
   font-family: 'SmileySans Oblique', sans-serif;
+}
+
+/* 父帖子区域样式 */
+.parent-post-section {
+  margin: 40px 0;
+  padding: 25px;
+  background: linear-gradient(135deg, #fff9e6 0%, #ffeaa7 100%);
+  border-radius: 16px;
+  border: 2px solid #ffd166;
+  box-shadow: 0 8px 25px rgba(255, 209, 102, 0.3);
+}
+
+.parent-post-title {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1.4rem;
+  color: #e17055;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.parent-post-icon {
+  font-size: 1.6rem;
+}
+
+.parent-post-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #fdcb6e;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.parent-post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f2f6;
+}
+
+.parent-post-category {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background-color: #f8f9fa;
+  color: #495057;
+}
+
+.parent-post-date {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.parent-post-title-text {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1.3rem;
+  color: #333;
+  margin-bottom: 15px;
+  line-height: 1.4;
+}
+
+.parent-post-author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.parent-post-avatar {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.parent-post-author-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.parent-post-author-name {
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.parent-post-time {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.parent-post-content-preview {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #74b9ff;
+}
+
+.parent-post-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.parent-post-view-button {
+  padding: 8px 20px;
+  background-color: #74b9ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.parent-post-view-button:hover {
+  background-color: #0984e3;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(116, 185, 255, 0.3);
 }
 
 /* 响应式设计 */
