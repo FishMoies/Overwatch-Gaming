@@ -1,11 +1,10 @@
 <template>
   <nav class="navbar">
-    <router-link to="/" class="brand">E426</router-link>
+    <router-link to="/" class="brand">首页</router-link>
     <ul class="nav-links">
-      <li><router-link to="/">首页</router-link></li>
-      <li><router-link to="/about">关于</router-link></li>
-      <li v-if="isLoggedIn"><router-link to="/createpost">发帖子</router-link></li>
+      <li v-if="isLoggedIn"><router-link to="/createpost">发帖</router-link></li>
       <li v-if="isLoggedIn"><router-link to="/user">用户面板</router-link></li>
+      <li><a href="https://www.owmod.net/" target="_blank" rel="noopener noreferrer">熔火工坊</a></li>
     </ul>
     <div class="nav-actions">
       <SearchInput />
@@ -69,7 +68,7 @@ onUnmounted(() => {
 .brand {
   color: white;
   text-decoration: none;
-  font-size: 1.5em;
+  font-size: 1em;
 }
 
 .nav-links {
