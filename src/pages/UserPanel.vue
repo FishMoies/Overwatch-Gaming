@@ -75,7 +75,7 @@
           <div class="team-members-section" v-if="teamMembers.length > 0 && isViewingOwnProfile">
             <h3 class="members-title">战队成员 ({{ teamMembers.length }}/6)</h3>
             <div class="members-list">
-              <div v-for="member in teamMembers" :key="member.id" class="member-item">
+              <div v-for="member in teamMembers" :key="member.id" class="member-item" @click="handleMemberClick(member.id)">
                 <div class="member-info">
                   <span class="member-name">{{ member.username }}</span>
                   <div class="member-roles-container">
@@ -507,7 +507,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue';
+import { ref, reactive, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import auth from '../utils/auth.js';
 
@@ -895,10 +895,11 @@ const handleDeleteAccount = () => {
 
 // 加载战队信息
 const loadTeamInfo = () => {
-  const currentUser = auth.getCurrentUser();
-  if (!currentUser) return;
+  // 使用当前查看的用户ID，如果没有则使用当前登录用户ID
+  const targetUserId = userInfo.value?.id || auth.getCurrentUser()?.id;
+  if (!targetUserId) return;
   
-  const team = auth.getUserTeam(currentUser.id);
+  const team = auth.getUserTeam(targetUserId);
   userTeam.value = team;
   
   if (team) {
@@ -1160,6 +1161,12 @@ const handleBack = () => {
   }
 };
 
+// 处理点击战队成员，跳转到用户面板
+const handleMemberClick = (memberId) => {
+  // 跳转到对应用户的用户面板
+  router.push({ name: 'UserProfile', params: { uid: memberId } });
+};
+
 // 组件挂载时加载用户信息和战队信息
 onMounted(() => {
   loadUserInfo();
@@ -1172,6 +1179,14 @@ onMounted(() => {
       loadUserPosts(); // 只有查看自己的资料时才加载帖子
     }
   }, 100);
+});
+
+// 监听uid变化，当路由参数改变时重新加载用户信息
+watch(uid, (newUid) => {
+  if (newUid) {
+    loadUserInfo();
+    loadTeamInfo();
+  }
 });
 </script>
 
@@ -1343,6 +1358,7 @@ onMounted(() => {
   border-radius: 10px;
   border: 1px solid #e9ecef;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .member-item:hover {
