@@ -808,6 +808,49 @@ export const auth = {
     }
   },
 
+  // 删除评论（子帖子）
+  deleteComment(commentId) {
+    const posts = this.getAllPosts();
+    const currentUser = this.getCurrentUser();
+    
+    if (!currentUser) {
+      return { success: false, message: '请先登录' };
+    }
+    
+    const numericCommentId = Number(commentId);
+    const commentIndex = posts.findIndex(post => post.id === numericCommentId);
+    
+    if (commentIndex === -1) {
+      return { success: false, message: '评论不存在' };
+    }
+    
+    // 检查权限：只有评论作者或帖子作者可以删除评论
+    const comment = posts[commentIndex];
+    const isCommentAuthor = comment.userId === currentUser.id;
+    
+    // 如果是评论，还需要检查是否是帖子作者
+    let isPostAuthor = false;
+    if (comment.parentId) {
+      const parentPost = posts.find(post => post.id === comment.parentId);
+      if (parentPost && parentPost.userId === currentUser.id) {
+        isPostAuthor = true;
+      }
+    }
+    
+    if (!isCommentAuthor && !isPostAuthor) {
+      return { success: false, message: '无权删除此评论' };
+    }
+    
+    // 删除评论
+    posts.splice(commentIndex, 1);
+    
+    if (this.saveAllPosts(posts)) {
+      return { success: true };
+    } else {
+      return { success: false, message: '删除失败' };
+    }
+  },
+
   // 初始化测试数据（仅用于开发）
   initTestData() {
     const users = this.getAllUsers();

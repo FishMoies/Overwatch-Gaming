@@ -437,23 +437,26 @@ const isCommentAuthor = (comment) => {
 };
 
 // 删除评论（子帖子）
-const deleteComment = (commentId) => {
+const deleteComment = async (commentId) => {
   if (!confirm('确定要删除这条评论吗？')) {
     return;
   }
   
   try {
-    // 从子帖子列表中移除
-    const commentIndex = childPosts.value.findIndex(c => c.id === commentId);
-    if (commentIndex !== -1) {
-      childPosts.value.splice(commentIndex, 1);
+    // 调用auth.js的deleteComment函数
+    const result = auth.deleteComment(commentId);
+    
+    if (result.success) {
+      // 从子帖子列表中移除
+      const commentIndex = childPosts.value.findIndex(c => c.id === commentId);
+      if (commentIndex !== -1) {
+        childPosts.value.splice(commentIndex, 1);
+      }
       
-      // 这里应该调用API删除帖子
-      // 暂时只更新本地状态
       message.value = '评论删除成功';
       isError.value = false;
     } else {
-      message.value = '评论不存在';
+      message.value = result.message || '删除失败';
       isError.value = true;
     }
   } catch (error) {
