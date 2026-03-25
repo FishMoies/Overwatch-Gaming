@@ -62,9 +62,7 @@
               <div class="post-footer">
                 <span class="post-author">作者: {{ post.author }}</span>
                 <span class="post-date">{{ post.date }}</span>
-                <button class="view-detail-button" @click.stop="viewPostDetail(post.id)">
-                  查看详情
-                </button>
+                <!--<button class="view-detail-button" @click.stop="viewPostDetail(post.id)">查看详情</button> 这一条用来显示详细按钮，但现在直接点击也能进入详细所以已废弃-->
               </div>
             </div>
           </div>
