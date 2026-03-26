@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import auth from '../utils/auth.js'
+import auth from '../services/auth.js'
 import fullpage from 'fullpage.js'
 
 const router = useRouter()

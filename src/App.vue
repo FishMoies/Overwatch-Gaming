@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import NavBar from './components/NavBar.vue'
-import auth from './utils/auth.js'
+import auth from './services/auth.js'
 import fullpage from 'fullpage.js'
 
 const route = useRoute()

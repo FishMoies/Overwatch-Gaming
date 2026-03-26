@@ -15,7 +15,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import auth from '../utils/auth.js';
+import auth from '../services/auth.js';
 import SearchInput from './SearchInput.vue';
 
 const router = useRouter();

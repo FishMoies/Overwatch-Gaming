@@ -67,7 +67,8 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-import auth from '../utils/auth.js'
+import auth from '../services/auth.js'
+import postService from '../services/post.js'
 
 const formData = reactive({
   title: '',
@@ -120,11 +121,19 @@ const handleCreatePost = async () => {
   message.value = ''
   
   try {
-    const result = auth.createPost({
+    const currentUser = auth.getCurrentUser()
+    if (!currentUser) {
+      message.value = '请先登录后再发帖'
+      isError.value = true
+      router.push({ name: 'Login' })
+      return
+    }
+    
+    const result = postService.createPost({
       title: formData.title.trim(),
       category: formData.category,
       content: formData.content.trim()
-    })
+    }, currentUser.id, currentUser.username)
     
     if (result.success) {
       message.value = '帖子发布成功！正在跳转到用户面板...'

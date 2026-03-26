@@ -92,7 +92,9 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import auth from '../utils/auth.js'
+import auth from '../services/auth.js'
+import postService from '../services/post.js'
+import userService from '../services/user.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -143,7 +145,7 @@ const performSearch = () => {
     
     if (activeTab.value === 'posts') {
       // 搜索帖子 - 过滤掉回复和评论（parentId为null或undefined的才是主帖子）
-      const allPosts = auth.getAllPosts()
+      const allPosts = postService.getAllPosts()
       posts.value = allPosts.filter(post => {
         // 只显示主帖子（parentId为null或undefined）
         const isMainPost = post.parentId === null || post.parentId === undefined
@@ -163,7 +165,7 @@ const performSearch = () => {
       }))
     } else {
       // 搜索用户
-      const allUsers = auth.getAllUsers()
+      const allUsers = userService.getAllUsers()
       users.value = allUsers.filter(user => {
         return (
           user.id.toString().includes(query) ||

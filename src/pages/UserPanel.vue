@@ -509,7 +509,10 @@
 <script setup>
 import { ref, reactive, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import auth from '../utils/auth.js';
+import auth from '../services/auth.js';
+import userService from '../services/user.js';
+import postService from '../services/post.js';
+import teamService from '../services/team.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -743,7 +746,7 @@ const loadUserInfo = () => {
   
   if (targetUid) {
     // 通过用户ID获取用户信息
-    const user = auth.getUserById(targetUid);
+    const user = userService.getUserById(targetUid);
     if (user) {
       userInfo.value = user;
     } else {
@@ -820,7 +823,7 @@ const handleChangePassword = () => {
   
   // 这里应该调用API验证当前密码并更新密码
   // 由于是本地存储演示，我们简化处理
-  const users = auth.getAllUsers();
+  const users = userService.getAllUsers();
   const userIndex = users.findIndex(user => user.id === currentUser.id);
   
   if (userIndex === -1) {
@@ -840,7 +843,7 @@ const handleChangePassword = () => {
   users[userIndex].password = passwordData.newPassword;
   users[userIndex].updatedAt = new Date().toISOString();
   
-  if (auth.saveAllUsers(users)) {
+  if (userService.saveAllUsers(users)) {
     passwordMessage.value = '密码修改成功！';
     isPasswordError.value = false;
     
@@ -867,7 +870,7 @@ const handleDeleteAccount = () => {
   }
   
   // 验证密码
-  const users = auth.getAllUsers();
+  const users = userService.getAllUsers();
   const user = users.find(u => u.id === currentUser.id);
   
   if (!user) {
@@ -881,7 +884,7 @@ const handleDeleteAccount = () => {
   }
   
   // 删除用户
-  const result = auth.deleteUser(currentUser.id);
+  const result = userService.deleteUser(currentUser.id);
   
   if (result.success) {
     deleteMessage.value = '账户已成功注销';
@@ -899,12 +902,14 @@ const loadTeamInfo = () => {
   const targetUserId = userInfo.value?.id || auth.getCurrentUser()?.id;
   if (!targetUserId) return;
   
-  const team = auth.getUserTeam(targetUserId);
+  const team = teamService.getUserTeam(targetUserId);
   userTeam.value = team;
   
   if (team) {
-    const members = auth.getTeamMembers(team.id);
-    teamMembers.value = members;
+    const members = teamService.getTeamMembers(team.id);
+    // teamService.getTeamMembers 返回成员ID列表，需要获取用户信息
+    const allUsers = userService.getAllUsers();
+    teamMembers.value = allUsers.filter(user => members.includes(user.id));
   } else {
     teamMembers.value = [];
   }
@@ -925,7 +930,7 @@ const handleCreateTeam = () => {
     return;
   }
   
-  const result = auth.createTeam(teamData.teamName.trim(), currentUser.id);
+  const result = teamService.createTeam(teamData.teamName.trim(), currentUser.id);
   
   if (result.success) {
     teamMessage.value = '战队创建成功！';
@@ -961,7 +966,7 @@ const handleJoinTeam = () => {
     return;
   }
   
-  const result = auth.joinTeam(joinTeamName.value.trim(), currentUser.id);
+  const result = teamService.joinTeam(joinTeamName.value.trim(), currentUser.id);
   
   if (result.success) {
     joinTeamMessage.value = '成功加入战队！';
@@ -990,7 +995,7 @@ const handleLeaveTeam = () => {
     return;
   }
   
-  const result = auth.leaveTeam(currentUser.id);
+  const result = teamService.leaveTeam(currentUser.id);
   
   if (result.success) {
     leaveTeamMessage.value = result.teamDeleted ? '已退出战队，战队已解散' : '已成功退出战队';
@@ -1042,7 +1047,7 @@ const handleChangeRole = () => {
   }
   
   // 调用更新职责函数（需要修改后端支持数组）
-  const result = auth.updateUserRoles(currentUser.id, selectedRoles.value);
+  const result = userService.updateUserRoles(currentUser.id, selectedRoles.value);
   
   if (result.success) {
     roleMessage.value = '职责更新成功！';
@@ -1080,8 +1085,8 @@ const loadUserPosts = () => {
   
   loadingPosts.value = true;
   try {
-    // 使用auth.js中的方法获取指定用户的主帖子（不包括回复和评论）
-    userPosts.value = auth.getUserMainPosts(targetUserId);
+    // 使用postService中的方法获取指定用户的主帖子（不包括回复和评论）
+    userPosts.value = postService.getUserMainPosts(targetUserId);
   } catch (error) {
     console.error('加载帖子失败:', error);
   } finally {
@@ -1106,7 +1111,8 @@ const deletePost = (postId) => {
     return;
   }
   
-  const result = auth.deletePost(postId);
+  const currentUser = auth.getCurrentUser();
+  const result = postService.deletePost(postId, currentUser?.id);
   if (result.success) {
     // 从列表中移除已删除的帖子
     userPosts.value = userPosts.value.filter(post => post.id !== postId);

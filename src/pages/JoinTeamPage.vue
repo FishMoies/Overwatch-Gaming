@@ -226,7 +226,9 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
-import auth from '../utils/auth.js';
+import auth from '../services/auth.js';
+import teamService from '../services/team.js';
+import userService from '../services/user.js';
 
 // 状态变量
 const loading = ref(true);
@@ -253,7 +255,7 @@ const isUserInTeam = computed(() => {
   const currentUser = auth.getCurrentUser();
   if (!currentUser) return false;
   
-  const users = auth.getAllUsers();
+  const users = userService.getAllUsers();
   const user = users.find(u => u.id === currentUser.id);
   return user && user.teamId;
 });
@@ -264,10 +266,10 @@ const loadTeams = () => {
   
   try {
     // 获取所有战队
-    const allTeams = auth.getAllTeams();
-    
+    const allTeams = teamService.getAllTeams();
+
     // 获取所有用户以获取创建者名称
-    const users = auth.getAllUsers();
+    const users = userService.getAllUsers();
     
     // 处理战队数据，添加额外信息
     const processedTeams = allTeams.map(team => {
@@ -420,7 +422,7 @@ const confirmJoinTeam = async () => {
   try {
     // 使用完整的战队名称（已经包含#号）
     const fullTeamName = selectedTeam.value.name;
-    const result = auth.joinTeam(fullTeamName, currentUser.id);
+    const result = teamService.joinTeam(fullTeamName, currentUser.id);
     
     if (result.success) {
       joinMessage.value = '成功加入战队！';
@@ -451,7 +453,7 @@ const showTeamDetails = async (team) => {
   
   try {
     // 加载战队成员
-    const users = auth.getAllUsers();
+    const users = userService.getAllUsers();
     const members = users.filter(user => user.teamId === team.id);
     teamMembers.value = members;
     

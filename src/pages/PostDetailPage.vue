@@ -209,7 +209,8 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import auth from '../utils/auth.js';
+import auth from '../services/auth.js';
+import postService from '../services/post.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -242,8 +243,8 @@ const loadPostDetail = async () => {
   parentPost.value = null; // 重置父帖子
   
   try {
-    // 使用auth.js的getPostById函数获取帖子详情
-    const foundPost = auth.getPostById(postId.value);
+    // 使用postService的getPostById函数获取帖子详情
+    const foundPost = postService.getPostById(postId.value);
     
     if (foundPost) {
       post.value = foundPost;
@@ -252,11 +253,11 @@ const loadPostDetail = async () => {
       isLiked.value = false;
       
       // 获取帖子的所有子帖子（评论）
-      childPosts.value = auth.getChildPosts(postId.value);
+      childPosts.value = postService.getChildPosts(postId.value);
       
       // 如果当前帖子是评论/回复，获取父帖子
       if (foundPost.parentId) {
-        parentPost.value = auth.getPostById(foundPost.parentId);
+        parentPost.value = postService.getPostById(foundPost.parentId);
       }
     } else {
       post.value = null;
@@ -407,8 +408,9 @@ const addComment = async () => {
   }
   
   try {
-    // 使用auth.js的addComment函数创建子帖子
-    const result = auth.addComment(postId.value, newComment.value.trim());
+    // 使用postService的addComment函数创建子帖子
+    const currentUser = auth.getCurrentUser();
+    const result = postService.addComment(postId.value, newComment.value.trim(), currentUser.id, currentUser.username);
     
     if (result.success) {
       // 将新创建的子帖子添加到子帖子列表的开头
@@ -443,8 +445,9 @@ const deleteComment = async (commentId) => {
   }
   
   try {
-    // 调用auth.js的deleteComment函数
-    const result = auth.deleteComment(commentId);
+    // 调用postService的deleteComment函数
+    const currentUser = auth.getCurrentUser();
+    const result = postService.deleteComment(commentId, currentUser.id);
     
     if (result.success) {
       // 从子帖子列表中移除
@@ -473,7 +476,8 @@ const deletePost = () => {
   }
   
   // 这里应该调用API删除帖子
-  const result = auth.deletePost(post.value.id);
+  const currentUser = auth.getCurrentUser();
+  const result = postService.deletePost(post.value.id, currentUser.id);
   
   if (result.success) {
     message.value = '帖子删除成功';
