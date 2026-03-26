@@ -38,14 +38,19 @@
         <!-- 作者信息 -->
         <div class="author-info">
           <div class="author-avatar">
-            <div class="avatar-placeholder">{{ post.username.charAt(0).toUpperCase() }}</div>
+            <img
+              :src="getUserAvatar(post.userId)"
+              :alt="post.username"
+              class="avatar-image"
+              @error="handleAvatarError"
+            />
           </div>
           <div class="author-details">
             <div class="author-name">
               <span class="author-username">{{ post.username }}</span>
-              <button 
-                v-if="post.userId" 
-                class="view-profile-button" 
+              <button
+                v-if="post.userId"
+                class="view-profile-button"
                 @click="viewUserProfile(post.userId)"
               >
                 查看个人资料
@@ -118,7 +123,12 @@
             <h4 class="parent-post-title-text">{{ parentPost.title }}</h4>
             <div class="parent-post-author">
               <div class="parent-post-avatar">
-                {{ parentPost.username.charAt(0).toUpperCase() }}
+                <img
+                  :src="getUserAvatar(parentPost.userId)"
+                  :alt="parentPost.username"
+                  class="avatar-image-small"
+                  @error="handleAvatarError"
+                />
               </div>
               <div class="parent-post-author-info">
                 <span class="parent-post-author-name">{{ parentPost.username }}</span>
@@ -170,7 +180,12 @@
               <div class="comment-header">
                 <div class="comment-author">
                   <div class="comment-avatar">
-                    {{ childPost.username.charAt(0).toUpperCase() }}
+                    <img
+                      :src="getUserAvatar(childPost.userId)"
+                      :alt="childPost.username"
+                      class="avatar-image-tiny"
+                      @error="handleAvatarError"
+                    />
                   </div>
                   <div class="comment-author-info">
                     <span class="comment-author-name">{{ childPost.username }}</span>
@@ -211,6 +226,7 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import auth from '../services/auth.js';
 import postService from '../services/post.js';
+import userService from '../services/user.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -224,6 +240,19 @@ const message = ref('');
 const isError = ref(false);
 const newComment = ref('');
 const isLiked = ref(false);
+
+// 获取用户头像
+const getUserAvatar = (userId) => {
+  if (!userId) return '/Head.png';
+  const user = userService.getUserById(userId);
+  return user?.avatar || '/Head.png';
+};
+
+// 处理头像加载错误
+const handleAvatarError = (event) => {
+  // 如果头像加载失败，使用默认头像
+  event.target.src = '/Head.png';
+};
 
 // 检查当前帖子是否为评论/回复
 const isComment = computed(() => {
@@ -665,18 +694,28 @@ onMounted(() => {
   height: 50px;
 }
 
-.avatar-placeholder {
+.avatar-image {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-family: 'SmileySans Oblique', sans-serif;
-  font-size: 1.5rem;
-  font-weight: bold;
+  object-fit: cover;
+  background-color: #f0f2f5; /* 加载时的背景色 */
+}
+
+.avatar-image-small {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #f0f2f5;
+}
+
+.avatar-image-tiny {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #f0f2f5;
 }
 
 .author-details {
@@ -915,15 +954,7 @@ onMounted(() => {
 .comment-avatar {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-family: 'SmileySans Oblique', sans-serif;
-  font-weight: bold;
-  font-size: 0.9rem;
+  /* 作为头像图片容器 */
 }
 
 .comment-author-info {
@@ -1103,15 +1134,7 @@ onMounted(() => {
 .parent-post-avatar {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-family: 'SmileySans Oblique', sans-serif;
-  font-weight: bold;
-  font-size: 0.9rem;
+  /* 作为头像图片容器 */
 }
 
 .parent-post-author-info {

@@ -1,234 +1,269 @@
 <template>
-  <div class="user-panel page-enter-active">
-    <div class="panel-container">
-      <div class="header-section">
-        <button class="back-button" @click="handleBack">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
-          </svg>
-          返回
-        </button>
-        <h1 class="page-title">用户面板</h1>
-      </div>
-      
-      <!-- 用户信息展示 -->
-      <div class="user-info-section">
-        <h2>基本信息</h2>
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label">用户名：</span>
-            <span class="info-value">{{ userInfo.username }}</span>
+  <div class="user-profile page-enter-active">
+    <!-- 用户封面图区域 -->
+    <div class="profile-cover">
+      <div class="cover-image"></div>
+      <div class="cover-overlay">
+
+        <div class="profile-header-content">
+          <div class="profile-avatar">
+            <img
+              :src="userInfo.avatar || '/Head.png'"
+              :alt="userInfo.username"
+              class="avatar-image"
+              @error="handleAvatarError"
+            />
           </div>
-          <div class="info-item">
-            <span class="info-label">邮箱：</span>
-            <span class="info-value">{{ userInfo.email }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">注册时间：</span>
-            <span class="info-value">{{ formatDate(userInfo.createdAt) }}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">最后登录：</span>
-            <span class="info-value">{{ formatDate(userInfo.loginTime) }}</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 战队信息区域 -->
-      <div class="team-section">
-        <h2>战队信息</h2>
-        <div v-if="userTeam" class="team-info">
-          <div class="info-grid">
-            <div class="info-item">
-              <span class="info-label">战队名称：</span>
-              <span class="info-value">{{ userTeam.name }}</span>
-            </div>
-            <div class="info-item" v-if="isViewingOwnProfile">
-              <span class="info-label">创建时间：</span>
-              <span class="info-value">{{ formatDate(userTeam.createdAt) }}</span>
-            </div>
-            <div class="info-item" v-if="isViewingOwnProfile">
-              <span class="info-label">成员数量：</span>
-              <span class="info-value">{{ teamMembers.length }} 人</span>
-            </div>
-            <div class="info-item" v-if="isViewingOwnProfile">
-              <span class="info-label">您的身份：</span>
-              <span class="info-value">{{ userTeam.creatorId === userInfo.id ? '创建者' : '成员' }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">担任职责：</span>
-              <span class="info-value role-display">
-                <div class="role-icons">
-                  <template v-if="roleIcons.length > 1">
-                    <img v-for="(icon, index) in roleIcons" :key="index" :src="icon" :alt="roleDisplayName" class="role-icon flexible-icon" />
-                  </template>
-                  <img v-else-if="roleIcons.length === 1" :src="roleIcons[0]" :alt="roleDisplayName" class="role-icon" />
-                  <div v-else class="no-role">未设置</div>
-                </div>
-                {{ roleDisplayName }}
-                <button class="change-role-button" @click="showChangeRole = true" v-if="isViewingOwnProfile">更改</button>
-              </span>
-            </div>
-          </div>
-          
-          <!-- 战队成员列表 - 仅自己可见 -->
-          <div class="team-members-section" v-if="teamMembers.length > 0 && isViewingOwnProfile">
-            <h3 class="members-title">战队成员 ({{ teamMembers.length }}/6)</h3>
-            <div class="members-list">
-              <div v-for="member in teamMembers" :key="member.id" class="member-item" @click="handleMemberClick(member.id)">
-                <div class="member-info">
-                  <span class="member-name">{{ member.username }}</span>
-                  <div class="member-roles-container">
-                    <template v-if="Array.isArray(member.role) && member.role.length > 1">
-                      <span
-                        v-for="(role, index) in member.role"
-                        :key="index"
-                        class="member-role"
-                        :class="getRoleClass(role)"
-                      >
-                        {{ getRoleDisplayName(role) }}
-                      </span>
-                    </template>
-                    <template v-else>
-                      <span class="member-role" :class="getRoleClass(member.role)">
-                        {{ getRoleDisplayName(member.role) }}
-                      </span>
-                    </template>
-                  </div>
-                </div>
-                <div class="member-icons">
-                  <img
-                    v-if="member.role !== 'flexible'"
-                    :src="getRoleIcon(member.role)"
-                    :alt="getRoleDisplayName(member.role)"
-                    class="member-role-icon"
-                  />
-                  <div v-else class="flexible-icons-small">
-                    <img src="/96px-职责：重装_图标.webp" alt="重装" class="flexible-icon-small" />
-                    <img src="/96px-职责：输出_图标.webp" alt="输出" class="flexible-icon-small" />
-                    <img src="/96px-职责：支援_图标.webp" alt="支援" class="flexible-icon-small" />
-                  </div>
-                  <span v-if="member.id === userTeam.creatorId" class="creator-badge">创建者</span>
-                  <span v-else-if="member.id === userInfo.id" class="you-badge">您</span>
-                </div>
+          <div class="profile-header-info">
+            <h1 class="profile-name">{{ userInfo.username }}</h1>
+            <div class="profile-stats">
+              <div class="stat-item">
+                <span class="stat-value">{{ userPosts.length }}</span>
+                <span class="stat-label">帖子</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">{{ totalLikes }}</span>
+                <span class="stat-label">获赞</span>
+              </div>
+              <div class="stat-item" v-if="userTeam">
+                <span class="stat-value">{{ teamMembers.length }}</span>
+                <span class="stat-label">战队成员</span>
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
 
-          <!-- 退出战队按钮 - 仅自己可见 -->
-          <div class="team-actions" v-if="isViewingOwnProfile">
-            <button class="action-button leave-team-button" @click="showLeaveConfirm = true">
-              <span class="button-icon">🚪</span>
-              <span class="button-text">退出战队</span>
-            </button>
+    <!-- 主要内容区域 -->
+    <div class="profile-container">
+      <!-- 左侧栏：用户信息和战队信息 -->
+      <div class="profile-sidebar">
+        <!-- 用户信息卡片 -->
+        <div class="profile-card">
+          <h3 class="card-title">基本信息</h3>
+          <div class="info-list">
+            <div class="info-row">
+              <span class="info-label">用户名</span>
+              <span class="info-value">{{ userInfo.username }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">邮箱</span>
+              <span class="info-value">{{ userInfo.email }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">注册时间</span>
+              <span class="info-value">{{ formatDate(userInfo.createdAt) }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">最后登录</span>
+              <span class="info-value">{{ formatDate(userInfo.loginTime) }}</span>
+            </div>
+          </div>
+        </div>
+      
+        <!-- 战队信息卡片 -->
+        <div class="profile-card team-card">
+          <h3 class="card-title">战队信息</h3>
+          <div v-if="userTeam" class="team-info">
+            <div class="info-list">
+              <div class="info-row">
+                <span class="info-label">战队名称</span>
+                <span class="info-value">{{ userTeam.name }}</span>
+              </div>
+              <div class="info-row" v-if="isViewingOwnProfile">
+                <span class="info-label">创建时间</span>
+                <span class="info-value">{{ formatDate(userTeam.createdAt) }}</span>
+              </div>
+              <div class="info-row" v-if="isViewingOwnProfile">
+                <span class="info-label">成员数量</span>
+                <span class="info-value">{{ teamMembers.length }} 人</span>
+              </div>
+              <div class="info-row" v-if="isViewingOwnProfile">
+                <span class="info-label">您的身份</span>
+                <span class="info-value">{{ userTeam.creatorId === userInfo.id ? '创建者' : '成员' }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">担任职责</span>
+                <span class="info-value role-display">
+                  <div class="role-icons">
+                    <template v-if="roleIcons.length > 1">
+                      <img v-for="(icon, index) in roleIcons" :key="index" :src="icon" :alt="roleDisplayName" class="role-icon flexible-icon" />
+                    </template>
+                    <img v-else-if="roleIcons.length === 1" :src="roleIcons[0]" :alt="roleDisplayName" class="role-icon" />
+                    <div v-else class="no-role">未设置</div>
+                  </div>
+                  {{ roleDisplayName }}
+                  <button class="change-role-button" @click="showChangeRole = true" v-if="isViewingOwnProfile">更改</button>
+                </span>
+              </div>
+            </div>
+            
+            <!-- 战队成员列表 - 仅自己可见 -->
+            <div class="team-members-section" v-if="teamMembers.length > 0 && isViewingOwnProfile">
+              <h4 class="members-title">战队成员 ({{ teamMembers.length }}/6)</h4>
+              <div class="members-list">
+                <div v-for="member in teamMembers" :key="member.id" class="member-item" @click="handleMemberClick(member.id)">
+                  <div class="member-info">
+                    <span class="member-name">{{ member.username }}</span>
+                    <div class="member-roles-container">
+                      <template v-if="Array.isArray(member.role) && member.role.length > 1">
+                        <span
+                          v-for="(role, index) in member.role"
+                          :key="index"
+                          class="member-role"
+                          :class="getRoleClass(role)"
+                        >
+                          {{ getRoleDisplayName(role) }}
+                        </span>
+                      </template>
+                      <template v-else>
+                        <span class="member-role" :class="getRoleClass(member.role)">
+                          {{ getRoleDisplayName(member.role) }}
+                        </span>
+                      </template>
+                    </div>
+                  </div>
+                  <div class="member-icons">
+                    <img
+                      v-if="member.role !== 'flexible'"
+                      :src="getRoleIcon(member.role)"
+                      :alt="getRoleDisplayName(member.role)"
+                      class="member-role-icon"
+                    />
+                    <div v-else class="flexible-icons-small">
+                      <img src="/96px-职责：重装_图标.webp" alt="重装" class="flexible-icon-small" />
+                      <img src="/96px-职责：输出_图标.webp" alt="输出" class="flexible-icon-small" />
+                      <img src="/96px-职责：支援_图标.webp" alt="支援" class="flexible-icon-small" />
+                    </div>
+                    <span v-if="member.id === userTeam.creatorId" class="creator-badge">创建者</span>
+                    <span v-else-if="member.id === userInfo.id" class="you-badge">您</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 退出战队按钮 - 仅自己可见 -->
+            <div class="team-actions" v-if="isViewingOwnProfile">
+              <button class="action-button leave-team-button" @click="showLeaveConfirm = true">
+                <span class="button-icon">🚪</span>
+                <span class="button-text">退出战队</span>
+              </button>
+            </div>
+          </div>
+          
+          <div v-else class="no-team">
+            <p class="no-team-message">{{ isViewingOwnProfile ? '您尚未加入任何战队' : '该用户尚未加入任何战队' }}</p>
+            <div class="team-actions" v-if="isViewingOwnProfile">
+              <button class="action-button create-team-button" @click="showCreateTeam = true">
+                <span class="button-icon">🏆</span>
+                <span class="button-text">创建战队</span>
+              </button>
+              <button class="action-button join-team-button" @click="goToJoinTeamPage">
+                <span class="button-icon">➕</span>
+                <span class="button-text">浏览并加入战队</span>
+              </button>
+            </div>
           </div>
         </div>
         
-        <div v-else class="no-team">
-          <p class="no-team-message">{{ isViewingOwnProfile ? '您尚未加入任何战队' : '该用户尚未加入任何战队' }}</p>
-          <div class="team-actions" v-if="isViewingOwnProfile">
-            <button class="action-button create-team-button" @click="showCreateTeam = true">
-              <span class="button-icon">🏆</span>
-              <span class="button-text">创建战队</span>
+        <!-- 账户操作卡片 - 仅自己可见 -->
+        <div class="profile-card actions-card" v-if="isViewingOwnProfile">
+          <h3 class="card-title">账户操作</h3>
+          <div class="action-buttons">
+            <button class="action-button logout-button" @click="handleLogout">
+              <span class="button-icon">🚪</span>
+              <span class="button-text">退出登录</span>
             </button>
-            <button class="action-button join-team-button" @click="goToJoinTeamPage">
-              <span class="button-icon">➕</span>
-              <span class="button-text">浏览并加入战队</span>
+            
+            <button class="action-button change-password-button" @click="showChangePassword = true">
+              <span class="button-icon">🔒</span>
+              <span class="button-text">修改密码</span>
+            </button>
+            
+            <button class="action-button delete-account-button" @click="showDeleteConfirm = true">
+              <span class="button-icon">🗑️</span>
+              <span class="button-text">注销账户</span>
             </button>
           </div>
         </div>
       </div>
       
-      <!-- 帖子瀑布流 - 对所有用户可见 -->
-      <div class="posts-section">
-        <h2>{{ isViewingOwnProfile ? '我的帖子' : `${userInfo.username}的帖子` }}</h2>
-        <div class="posts-header">
-          <button v-if="isViewingOwnProfile" class="action-button create-post-button" @click="goToCreatePost">
-            <span class="button-icon">📝</span>
-            <span class="button-text">发布新帖子</span>
-          </button>
-          <div class="posts-stats">
-            <span class="stat-item">共 {{ userPosts.length }} 篇帖子</span>
-            <span class="stat-item">获赞 {{ totalLikes }} 次</span>
+      <!-- 右侧内容区域：帖子流 -->
+      <div class="profile-content">
+        <!-- 帖子瀑布流 - 对所有用户可见 -->
+        <div class="posts-section">
+          <div class="posts-header">
+            <h2>{{ isViewingOwnProfile ? '我的帖子' : `${userInfo.username}的帖子` }}</h2>
+            <div class="posts-header-actions">
+              <button v-if="isViewingOwnProfile" class="create-post-button" @click="goToCreatePost">
+                <span class="button-icon">📝</span>
+                <span class="button-text">发布新帖子</span>
+              </button>
+              <div class="posts-stats">
+                <span class="stat-item">共 {{ userPosts.length }} 篇帖子</span>
+                <span class="stat-item">获赞 {{ totalLikes }} 次</span>
+              </div>
+            </div>
           </div>
-        </div>
-        
-        <div v-if="loadingPosts" class="loading-posts">
-          <div class="loading-spinner"></div>
-          <p>加载帖子中...</p>
-        </div>
-        
-        <div v-else-if="userPosts.length === 0" class="no-posts">
-          <p class="no-posts-message">{{ isViewingOwnProfile ? '您还没有发布过任何帖子' : `${userInfo.username}还没有发布过任何帖子` }}</p>
-          <button v-if="isViewingOwnProfile" class="create-post-button-empty" @click="goToCreatePost">
-            <span class="button-icon">📝</span>
-            <span class="button-text">发布第一篇帖子</span>
-          </button>
-        </div>
-        
-        <div v-else class="posts-waterfall">
-          <div
-            v-for="post in userPosts"
-            :key="post.id"
-            class="post-card"
-            :class="getPostCategoryClass(post.category)"
-          >
-            <div class="post-header">
-              <div class="post-category">{{ getCategoryDisplayName(post.category) }}</div>
-              <div class="post-date">{{ formatDate(post.createdAt) }}</div>
-            </div>
-            
-            <h3 class="post-title">{{ post.title }}</h3>
-            
-            <div class="post-content">
-              {{ truncateContent(post.content, 150) }}
-            </div>
-            
-            <div class="post-footer">
-              <div class="post-stats">
-                <span class="stat likes-stat">
-                  <span class="stat-icon">❤️</span>
-                  {{ post.likes }}
-                </span>
-                <span class="stat comments-stat">
-                  <span class="stat-icon">💬</span>
-                  {{ post.comments.length }}
-                </span>
+          
+          <div v-if="loadingPosts" class="loading-posts">
+            <div class="loading-spinner"></div>
+            <p>加载帖子中...</p>
+          </div>
+          
+          <div v-else-if="userPosts.length === 0" class="no-posts">
+            <p class="no-posts-message">{{ isViewingOwnProfile ? '您还没有发布过任何帖子' : `${userInfo.username}还没有发布过任何帖子` }}</p>
+            <button v-if="isViewingOwnProfile" class="create-post-button-empty" @click="goToCreatePost">
+              <span class="button-icon">📝</span>
+              <span class="button-text">发布第一篇帖子</span>
+            </button>
+          </div>
+          
+          <div v-else class="posts-waterfall">
+            <div
+              v-for="post in userPosts"
+              :key="post.id"
+              class="post-card"
+              :class="getPostCategoryClass(post.category)"
+            >
+              <div class="post-header">
+                <div class="post-category">{{ getCategoryDisplayName(post.category) }}</div>
+                <div class="post-date">{{ formatDate(post.createdAt) }}</div>
               </div>
               
-              <div class="post-actions">
-                <button class="post-action-button view-button" @click="viewPost(post.id)">
-                  查看详情
-                </button>
-                <button v-if="isViewingOwnProfile" class="post-action-button delete-button" @click="deletePost(post.id)">
-                  删除
-                </button>
+              <h3 class="post-title">{{ post.title }}</h3>
+              
+              <div class="post-content">
+                {{ truncateContent(post.content, 150) }}
+              </div>
+              
+              <div class="post-footer">
+                <div class="post-stats">
+                  <span class="stat likes-stat">
+                    <span class="stat-icon">❤️</span>
+                    {{ post.likes }}
+                  </span>
+                  <span class="stat comments-stat">
+                    <span class="stat-icon">💬</span>
+                    {{ post.comments.length }}
+                  </span>
+                </div>
+                
+                <div class="post-actions">
+                  <button class="post-action-button view-button" @click="viewPost(post.id)">
+                    查看详情
+                  </button>
+                  <button v-if="isViewingOwnProfile" class="post-action-button delete-button" @click="deletePost(post.id)">
+                    删除
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      
-      <!-- 功能按钮区域 - 仅自己可见 -->
-      <div class="actions-section" v-if="isViewingOwnProfile">
-        <h2>账户操作</h2>
-        <div class="action-buttons">
-          <button class="action-button logout-button" @click="handleLogout">
-            <span class="button-icon">🚪</span>
-            <span class="button-text">退出登录</span>
-          </button>
-          
-          <button class="action-button change-password-button" @click="showChangePassword = true">
-            <span class="button-icon">🔒</span>
-            <span class="button-text">修改密码</span>
-          </button>
-          
-          <button class="action-button delete-account-button" @click="showDeleteConfirm = true">
-            <span class="button-icon">🗑️</span>
-            <span class="button-text">注销账户</span>
-          </button>
-        </div>
-      </div>
+    </div>
       
       <!-- 修改密码模态框 -->
       <div v-if="showChangePassword" class="modal-overlay" @click.self="showChangePassword = false">
@@ -502,7 +537,6 @@
       <div v-if="message" class="message" :class="{ 'error': isError }">
         {{ message }}
       </div>
-    </div>
   </div>
 </template>
 
@@ -1167,6 +1201,12 @@ const handleBack = () => {
   }
 };
 
+// 处理头像加载错误
+const handleAvatarError = (event) => {
+  // 如果头像加载失败，使用默认头像
+  event.target.src = '/Head.png';
+};
+
 // 处理点击战队成员，跳转到用户面板
 const handleMemberClick = (memberId) => {
   // 跳转到对应用户的用户面板
@@ -1195,22 +1235,188 @@ watch(userInfo, (newUser) => {
 </script>
 
 <style scoped>
-.user-panel {
+.user-profile {
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  padding: 20px;
+  background-color: #f0f2f5;
+  font-family: 'SmileySans Oblique', sans-serif;
 }
 
-.panel-container {
-  background-color: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
-  padding: 40px;
+/* 用户封面图区域 */
+.profile-cover {
+  position: relative;
+  height: 300px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  overflow: hidden;
+}
+
+.cover-image {
   width: 100%;
-  max-width: 600px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  height: 100%;
+  background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)),
+              url('/public/Heading.png') center/cover no-repeat;
+}
+
+.cover-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.4));
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.back-button {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-family: 'SmileySans Oblique', sans-serif;
+  font-size: 1rem;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.back-button:hover {
+  background-color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.back-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.profile-header-content {
+  display: flex;
+  align-items: flex-end;
+  flex: 1;
+  gap: 30px;
+  padding-bottom: 40px;
+}
+
+.profile-avatar {
+  flex-shrink: 0;
+}
+
+.avatar-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid white;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  background-color: #f0f2f5; /* 加载时的背景色 */
+}
+
+.profile-header-info {
+  flex: 1;
+  color: white;
+}
+
+.profile-name {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.profile-stats {
+  display: flex;
+  gap: 30px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* 主要内容区域 */
+.profile-container {
+  max-width: 1200px;
+  margin-top: 60px;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 30px;
+}
+
+/* 左侧栏样式 */
+.profile-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profile-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e9ecef;
+}
+
+.card-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #4facfe;
+}
+
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.info-label {
+  font-weight: 500;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.info-value {
+  font-weight: 500;
+  color: #333;
+  text-align: right;
+  max-width: 60%;
+  word-break: break-word;
 }
 
 .header-section {
@@ -1541,7 +1747,7 @@ watch(userInfo, (newUser) => {
 }
 
 .button-icon {
-  font-size: 2rem;
+  font-size: 1.5rem;
   margin-bottom: 10px;
 }
 
@@ -1864,7 +2070,7 @@ watch(userInfo, (newUser) => {
 }
 
 .create-post-button {
-  padding: 12px 24px;
+  padding: 1px 48px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
@@ -1887,6 +2093,7 @@ watch(userInfo, (newUser) => {
 .posts-stats {
   display: flex;
   gap: 20px;
+  margin-top: 15px;
 }
 
 .stat-item {

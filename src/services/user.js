@@ -89,6 +89,7 @@ export const userService = {
       username: user.username,
       email: user.email,
       role: Array.isArray(user.role) ? user.role : [user.role || 'flexible'],
+      avatar: user.avatar || '/Head.png', // 头像字段，默认为默认头像
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       teamId: user.teamId || null
@@ -219,6 +220,7 @@ export const userService = {
       username: user.username,
       email: user.email,
       role: Array.isArray(user.role) ? user.role : [user.role || 'flexible'],
+      avatar: user.avatar || '/Head.png', // 头像字段，默认为默认头像
       teamId: user.teamId || null
     }));
   }

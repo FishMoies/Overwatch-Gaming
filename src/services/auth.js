@@ -95,6 +95,7 @@ export const auth = {
       email: userData.email,
       password: userData.password,
       role: [ROLE_OPTIONS.FLEXIBLE], // 默认职责为灵活（使用数组）
+      avatar: '/Head.png', // 默认头像
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -134,6 +135,7 @@ export const auth = {
       email: user.email,
       // 确保role是数组（处理旧数据可能是字符串的情况）
       role: Array.isArray(user.role) ? user.role : [user.role || 'flexible'],
+      avatar: user.avatar || '/Head.png', // 头像字段，默认为默认头像
       loggedIn: true,
       loginTime: new Date().toISOString(),
       rememberMe: rememberMe
@@ -247,6 +249,7 @@ export const auth = {
           email: 'test@example.com',
           password: 'password123',
           role: 'flexible', // 添加role字段
+          avatar: '/Head.png', // 默认头像
           createdAt: '2024-01-01T00:00:00.000Z',
           updatedAt: '2024-01-01T00:00:00.000Z'
         },
@@ -256,6 +259,7 @@ export const auth = {
           email: 'demo@example.com',
           password: 'demo123',
           role: 'flexible', // 添加role字段
+          avatar: '/Head.png', // 默认头像
           createdAt: '2024-01-01T00:00:00.000Z',
           updatedAt: '2024-01-01T00:00:00.000Z'
         }
