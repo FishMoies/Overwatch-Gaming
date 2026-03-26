@@ -1056,8 +1056,8 @@ const handleChangeRole = () => {
     roleMessage.value = '';
     selectedRoles.value = [];
     
-    // 立即刷新当前页面以更新显示
-    location.reload();
+    // 更新战队信息以刷新职责显示
+    loadTeamInfo();
   } else {
     roleMessage.value = result.message || '更新职责失败';
     isRoleError.value = true;
