@@ -139,11 +139,11 @@
         </div>
       </div>
       
-      <!-- 我的帖子瀑布流 - 仅自己可见 -->
-      <div class="posts-section" v-if="isViewingOwnProfile">
-        <h2>我的帖子</h2>
+      <!-- 帖子瀑布流 - 对所有用户可见 -->
+      <div class="posts-section">
+        <h2>{{ isViewingOwnProfile ? '我的帖子' : `${userInfo.username}的帖子` }}</h2>
         <div class="posts-header">
-          <button class="action-button create-post-button" @click="goToCreatePost">
+          <button v-if="isViewingOwnProfile" class="action-button create-post-button" @click="goToCreatePost">
             <span class="button-icon">📝</span>
             <span class="button-text">发布新帖子</span>
           </button>
@@ -159,8 +159,8 @@
         </div>
         
         <div v-else-if="userPosts.length === 0" class="no-posts">
-          <p class="no-posts-message">您还没有发布过任何帖子</p>
-          <button class="create-post-button-empty" @click="goToCreatePost">
+          <p class="no-posts-message">{{ isViewingOwnProfile ? '您还没有发布过任何帖子' : `${userInfo.username}还没有发布过任何帖子` }}</p>
+          <button v-if="isViewingOwnProfile" class="create-post-button-empty" @click="goToCreatePost">
             <span class="button-icon">📝</span>
             <span class="button-text">发布第一篇帖子</span>
           </button>
@@ -200,7 +200,7 @@
                 <button class="post-action-button view-button" @click="viewPost(post.id)">
                   查看详情
                 </button>
-                <button class="post-action-button delete-button" @click="deletePost(post.id)">
+                <button v-if="isViewingOwnProfile" class="post-action-button delete-button" @click="deletePost(post.id)">
                   删除
                 </button>
               </div>
@@ -1073,15 +1073,15 @@ const totalLikes = computed(() => {
 
 // 加载用户帖子
 const loadUserPosts = () => {
-  const currentUser = auth.getCurrentUser();
-  if (!currentUser) {
+  const targetUserId = userInfo.value?.id;
+  if (!targetUserId) {
     return;
   }
   
   loadingPosts.value = true;
   try {
-    // 使用auth.js中的方法获取当前用户的主帖子（不包括回复和评论）
-    userPosts.value = auth.getCurrentUserMainPosts();
+    // 使用auth.js中的方法获取指定用户的主帖子（不包括回复和评论）
+    userPosts.value = auth.getUserMainPosts(targetUserId);
   } catch (error) {
     console.error('加载帖子失败:', error);
   } finally {
@@ -1174,10 +1174,7 @@ onMounted(() => {
   
   // 使用setTimeout确保userInfo已加载
   setTimeout(() => {
-    const currentUser = auth.getCurrentUser();
-    if (currentUser && currentUser.id === userInfo.value.id) {
-      loadUserPosts(); // 只有查看自己的资料时才加载帖子
-    }
+    loadUserPosts(); // 总是加载帖子，无论查看谁的资料
   }, 100);
 });
 
@@ -1186,6 +1183,11 @@ watch(uid, (newUid) => {
   if (newUid) {
     loadUserInfo();
     loadTeamInfo();
+    
+    // 使用setTimeout确保userInfo已加载
+    setTimeout(() => {
+      loadUserPosts();
+    }, 100);
   }
 });
 </script>
