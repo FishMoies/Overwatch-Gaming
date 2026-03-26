@@ -1167,29 +1167,25 @@ const handleMemberClick = (memberId) => {
   router.push({ name: 'UserProfile', params: { uid: memberId } });
 };
 
-// 组件挂载时加载用户信息和战队信息
+// 组件挂载时加载用户信息
 onMounted(() => {
   loadUserInfo();
-  loadTeamInfo();
-  
-  // 使用setTimeout确保userInfo已加载
-  setTimeout(() => {
-    loadUserPosts(); // 总是加载帖子，无论查看谁的资料
-  }, 100);
 });
 
 // 监听uid变化，当路由参数改变时重新加载用户信息
 watch(uid, (newUid) => {
   if (newUid) {
     loadUserInfo();
-    loadTeamInfo();
-    
-    // 使用setTimeout确保userInfo已加载
-    setTimeout(() => {
-      loadUserPosts();
-    }, 100);
   }
 });
+
+// 监听userInfo变化，当用户信息加载后加载战队信息和帖子
+watch(userInfo, (newUser) => {
+  if (newUser && newUser.id) {
+    loadTeamInfo();
+    loadUserPosts();
+  }
+}, { immediate: true });
 </script>
 
 <style scoped>
