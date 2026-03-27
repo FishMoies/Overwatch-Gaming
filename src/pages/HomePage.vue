@@ -7,7 +7,7 @@ import { useRouter } from 'vue-router'
 import auth from '../services/auth.js'
 // 导入fullpage.js库，用于创建全屏滚动效果
 import fullpage from 'fullpage.js'
-
+import SupportGallery from '@/components/SupportGallery.vue'//奶位嵌套
 // 使用Vue Router获取路由器实例
 const router = useRouter()
 // 响应式变量：用户登录状态
@@ -43,9 +43,18 @@ const initFullpage = () => {
     css3: true,               // 使用CSS3变换
     fitToSection: false,      // 不自动调整到章节
     fixedElements: '.navbar', // 固定元素选择器（导航栏）
+    normalScrollElements: '.info-section, .hero-gallery, .hero-grid, .hero-card', // 排除第三屏右侧内容区域
+    normalScrollElementTouchThreshold: 5, // 触摸阈值
+    touchSensitivity: 15,     // 触摸灵敏度
+    keyboardScrolling: true,  // 启用键盘滚动
+    recordHistory: false,     // 不记录历史记录
     afterLoad: function(origin, destination, direction) {
       // fullpage.js加载完成后的逻辑
       // 可以在这里添加章节切换后的回调逻辑
+    },
+    onLeave: function(origin, destination, direction) {
+      // 离开章节时的回调
+      console.log('Leaving section', origin.index, 'to', destination.index);
     }
   })
 }
@@ -129,14 +138,9 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- 第三屏 -->
-      <div class="section blank-page">
-        <div class="content">
-          <h1 class="main-title">第三屏</h1>
-          <p class="subtitle" style="padding-left: 10px;">
-            这里是你要的第二个空白页面，可以放数据图表
-          </p>
-        </div>
+     <!-- 第三屏 -->
+      <div class="section">
+            <SupportGallery />
       </div>
 
       <!-- 第四屏 -->
