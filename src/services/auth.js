@@ -1,28 +1,35 @@
-// 本地存储键名
+// 认证服务模块 - 处理用户认证、注册、登录和用户管理
+// 使用localStorage进行数据持久化存储
+
+// 本地存储键名常量定义
 const STORAGE_KEYS = {
-  USERS: 'users',
-  CURRENT_USER: 'currentUser',
-  TEAMS: 'teams',
-  POSTS: 'posts'
+  USERS: 'users',          // 存储所有用户数据
+  CURRENT_USER: 'currentUser', // 存储当前登录用户
+  TEAMS: 'teams',          // 存储团队数据
+  POSTS: 'posts'           // 存储帖子数据
 };
 
-// 职责选项
+// 守望先锋角色职责选项常量
 const ROLE_OPTIONS = {
-  HEAVY: 'heavy',      // 重装
-  DAMAGE: 'damage',    // 输出
-  SUPPORT: 'support',  // 支援
-  FLEXIBLE: 'flexible' // 灵活
+  HEAVY: 'heavy',      // 重装角色
+  DAMAGE: 'damage',    // 输出角色
+  SUPPORT: 'support',  // 支援角色
+  FLEXIBLE: 'flexible' // 灵活角色（全能）
 };
 
-// 所有有效职责
+// 所有有效职责的数组（从ROLE_OPTIONS对象的值生成）
 const ALL_VALID_ROLES = Object.values(ROLE_OPTIONS);
 
-// 验证角色数组是否有效
+// 验证角色数组是否有效的函数
+// @param {Array} roles - 要验证的角色数组
+// @returns {Object} - 验证结果对象，包含valid属性和可选的message属性
 const validateRoles = (roles) => {
+  // 检查输入是否为数组
   if (!Array.isArray(roles)) {
     return { valid: false, message: '职责必须是数组' };
   }
   
+  // 检查数组是否为空
   if (roles.length === 0) {
     return { valid: false, message: '至少选择一个职责' };
   }
@@ -38,44 +45,57 @@ const validateRoles = (roles) => {
   const hasFlexible = roles.includes(ROLE_OPTIONS.FLEXIBLE);
   const hasOtherRoles = roles.some(role => role !== ROLE_OPTIONS.FLEXIBLE);
   
+  // 灵活选项不能与其他职责同时选择
   if (hasFlexible && hasOtherRoles) {
     return { valid: false, message: '灵活选项不能与其他职责同时选择' };
   }
   
-  // 检查非灵活职责数量
+  // 检查非灵活职责数量（最多2个）
   if (!hasFlexible && roles.length > 2) {
     return { valid: false, message: '最多只能选择2个职责' };
   }
   
+  // 所有验证通过
   return { valid: true };
 };
 
-// 用户管理工具
+// 用户管理工具对象（导出为auth）
 export const auth = {
-  // 获取所有用户
+  // 获取所有用户数据
+  // @returns {Array} - 用户数组，如果读取失败则返回空数组
   getAllUsers() {
     try {
+      // 从localStorage读取用户数据
       const usersJson = localStorage.getItem(STORAGE_KEYS.USERS);
+      // 解析JSON数据，如果不存在则返回空数组
       return usersJson ? JSON.parse(usersJson) : [];
     } catch (error) {
+      // 捕获并记录JSON解析错误
       console.error('读取用户数据失败:', error);
       return [];
     }
   },
 
-  // 保存所有用户
+  // 保存所有用户数据到localStorage
+  // @param {Array} users - 要保存的用户数组
+  // @returns {boolean} - 保存是否成功
   saveAllUsers(users) {
     try {
+      // 将用户数组转换为JSON字符串并存储
       localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(users));
       return true;
     } catch (error) {
+      // 捕获并记录存储错误
       console.error('保存用户数据失败:', error);
       return false;
     }
   },
 
   // 注册新用户
+  // @param {Object} userData - 用户注册数据（包含username, email, password等）
+  // @returns {Object} - 注册结果对象，包含success属性和可选的message属性
   registerUser(userData) {
+    // 获取现有所有用户
     const users = this.getAllUsers();
     
     // 检查用户名是否已存在
@@ -90,14 +110,14 @@ export const auth = {
     
     // 创建新用户对象
     const newUser = {
-      id: Date.now(),
-      username: userData.username,
-      email: userData.email,
-      password: userData.password,
+      id: Date.now(),  // 使用时间戳作为唯一ID
+      username: userData.username,  // 用户名
+      email: userData.email,        // 邮箱
+      password: userData.password,  // 密码（明文存储，实际应用中应加密）
       role: [ROLE_OPTIONS.FLEXIBLE], // 默认职责为灵活（使用数组）
-      avatar: '/Head.png', // 默认头像
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      avatar: '/Head.png', // 默认头像路径
+      createdAt: new Date().toISOString(),  // 创建时间
+      updatedAt: new Date().toISOString()   // 更新时间
     };
     
     // 添加到用户列表

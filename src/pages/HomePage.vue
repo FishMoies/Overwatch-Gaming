@@ -1,55 +1,75 @@
 <script setup>
+// 导入Vue Composition API
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+// 导入Vue Router相关函数
 import { useRouter } from 'vue-router'
+// 导入认证服务
 import auth from '../services/auth.js'
+// 导入fullpage.js库，用于创建全屏滚动效果
 import fullpage from 'fullpage.js'
 
+// 使用Vue Router获取路由器实例
 const router = useRouter()
+// 响应式变量：用户登录状态
 const isLoggedIn = ref(false)
+// fullpage.js实例变量
 let fpInstance = null
 
-// 检查登录状态
+// 检查登录状态函数
 const checkLoginStatus = () => {
+  // 调用认证服务检查用户是否已登录
   isLoggedIn.value = auth.isLoggedIn()
 }
 
-// 导航函数
+// 导航函数：跳转到指定路由
 const navigateTo = (routeName) => {
+  // 使用Vue Router进行编程式导航
   router.push({ name: routeName })
 }
 
-// 初始化fullpage.js
+// 初始化fullpage.js函数
 const initFullpage = () => {
+  // 如果已有fullpage实例，先销毁它
   if (fpInstance) {
     fpInstance.destroy('all')
   }
 
+  // 创建新的fullpage.js实例
   fpInstance = new fullpage('#fullpage', {
-    autoScrolling: true,
-    navigation: true,
-    scrollingSpeed: 700,
-    paddingTop: '60px',
-    css3: true,
-    fitToSection: false,
-    fixedElements: '.navbar',
+    autoScrolling: true,      // 启用自动滚动
+    navigation: true,         // 显示导航点
+    scrollingSpeed: 700,      // 滚动速度（毫秒）
+    paddingTop: '60px',       // 顶部内边距（为导航栏留出空间）
+    css3: true,               // 使用CSS3变换
+    fitToSection: false,      // 不自动调整到章节
+    fixedElements: '.navbar', // 固定元素选择器（导航栏）
     afterLoad: function(origin, destination, direction) {
       // fullpage.js加载完成后的逻辑
+      // 可以在这里添加章节切换后的回调逻辑
     }
   })
 }
 
+// 组件挂载时的生命周期钩子
 onMounted(() => {
+  // 初始检查登录状态
   checkLoginStatus()
+  // 监听storage事件，用于跨标签页同步登录状态
   window.addEventListener('storage', checkLoginStatus)
   
+  // 使用nextTick确保DOM已完全渲染
   nextTick(() => {
+    // 初始化fullpage.js
     initFullpage()
   })
 })
 
+// 组件卸载时的生命周期钩子
 onUnmounted(() => {
+  // 移除storage事件监听器
   window.removeEventListener('storage', checkLoginStatus)
   
+  // 如果存在fullpage实例，销毁它并置空
   if (fpInstance) {
     fpInstance.destroy('all')
     fpInstance = null
