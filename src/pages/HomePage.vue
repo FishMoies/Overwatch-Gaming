@@ -39,7 +39,7 @@ const initFullpage = () => {
     autoScrolling: true,      // 启用自动滚动
     navigation: true,         // 显示导航点
     scrollingSpeed: 700,      // 滚动速度（毫秒）
-    paddingTop: '60px',       // 顶部内边距（为导航栏留出空间）
+    paddingTop: '0px',       // 顶部内边距（为导航栏留出空间）
     css3: true,               // 使用CSS3变换
     fitToSection: false,      // 不自动调整到章节
     fixedElements: '.navbar', // 固定元素选择器（导航栏）
@@ -109,22 +109,51 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- 第二屏 -->
-      <div class="section">
-        <div class="video-background">
-          <video autoplay muted loop playsinline>
-            <source src="/Amiya2.mp4" type="video/mp4">
-          </video>
-          <div class="video-overlay"></div>
-        </div>
-
-        <div class="content hero-content1" style="white-space: pre-wrap;">
-          <h1 class="main-title1">关于我们</h1>
-          <p class="subtitle1" style="padding-left: 10px;">
-            E426 Group. 一个名不见经传的小团队，全然只凭兴趣作做。<br/><br/>
-            "那一天所看到的光景，想要呐喊却无法发出声音的绝望。<br/>
-            希望能把这些，永远藏在记忆的最深处......"<br/>
-            愿你如阿米娅，心有所向，素履以往。
+      <!-- 第2屏 - 角色职责展示 -->
+      <div class="section roles-page">
+        <div class="content roles-content">
+          <h1 class="main-title1">英雄职责</h1>
+          <p class="subtitle1" style="padding-left: 10px; margin-bottom: 40px;">
+            三种核心职责
+          </p>
+          
+          <div class="roles-container">
+            <div class="role-card">
+              <div class="role-icon">
+                <img src="/96px-职责：输出_图标.webp" alt="输出角色">
+              </div>
+              <h3 class="role-title">输出</h3>
+              <p class="role-description">
+                高伤害输出角色，负责消灭敌方英雄。<br>
+                拥有灵活的移动能力和强大的攻击技能。
+              </p>
+            </div>
+            
+            <div class="role-card">
+              <div class="role-icon">
+                <img src="/96px-职责：支援_图标.webp" alt="支援角色">
+              </div>
+              <h3 class="role-title">支援</h3>
+              <p class="role-description">
+                治疗和辅助队友，提供生存保障。<br>
+                拥有控制技能和团队增益效果。
+              </p>
+            </div>
+            
+            <div class="role-card">
+              <div class="role-icon">
+                <img src="/96px-职责：重装_图标.webp" alt="重装角色">
+              </div>
+              <h3 class="role-title">重装</h3>
+              <p class="role-description">
+                吸收伤害，保护队友，控制战场。<br>
+                拥有高生命值和强大的防御能力。
+              </p>
+            </div>
+          </div>
+          
+          <p class="role-tip" style="margin-top: 50px; font-size: 1.2rem; color: rgba(255,255,255,0.7);">
+            选择自身所擅长职责
           </p>
         </div>
       </div>
@@ -148,55 +177,6 @@ onUnmounted(() => {
           </p>
         </div>
       </div>
-
-      <!-- 第五屏 - 角色职责展示 -->
-      <div class="section roles-page">
-        <div class="content roles-content">
-          <h1 class="main-title1">守望先锋® 角色职责</h1>
-          <p class="subtitle1" style="padding-left: 10px; margin-bottom: 40px;">
-            了解游戏中的三种核心职责，组建完美团队
-          </p>
-          
-          <div class="roles-container">
-            <div class="role-card">
-              <div class="role-icon">
-                <img src="/96px-职责：输出_图标.webp" alt="输出角色">
-              </div>
-              <h3 class="role-title">输出 (Damage)</h3>
-              <p class="role-description">
-                高伤害输出角色，负责消灭敌方英雄。<br>
-                拥有灵活的移动能力和强大的攻击技能。
-              </p>
-            </div>
-            
-            <div class="role-card">
-              <div class="role-icon">
-                <img src="/96px-职责：支援_图标.webp" alt="支援角色">
-              </div>
-              <h3 class="role-title">支援 (Support)</h3>
-              <p class="role-description">
-                治疗和辅助队友，提供生存保障。<br>
-                拥有控制技能和团队增益效果。
-              </p>
-            </div>
-            
-            <div class="role-card">
-              <div class="role-icon">
-                <img src="/96px-职责：重装_图标.webp" alt="重装角色">
-              </div>
-              <h3 class="role-title">重装 (Tank)</h3>
-              <p class="role-description">
-                吸收伤害，保护队友，控制战场。<br>
-                拥有高生命值和强大的防御能力。
-              </p>
-            </div>
-          </div>
-          
-          <p class="role-tip" style="margin-top: 50px; font-size: 1.2rem; color: rgba(255,255,255,0.7);">
-            在E426平台，你可以根据角色职责寻找合适的队友，组建平衡的团队！
-          </p>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -207,6 +187,8 @@ onUnmounted(() => {
   height:100vh;
   overflow:hidden;
   position:relative;
+  padding-top: 60px;
+  box-sizing: border-box;
 }
 
 /* 背景视频 */
@@ -244,6 +226,7 @@ onUnmounted(() => {
   color:white;
   z-index:1001;
   position:relative;
+  padding-top: 80px;
 }
 
 /* 第一屏特殊布局 */
