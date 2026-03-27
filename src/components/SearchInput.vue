@@ -1,188 +1,487 @@
 <template>
-  <!-- 搜索输入组件容器，根据isActive状态添加'active'类 -->
-  <div class="search-input-container" :class="{ 'active': isActive }">
-    <!-- 搜索图标按钮：非激活状态时显示 -->
-    <button class="search-icon-button" @click="toggleSearch" v-if="!isActive">
-      <!-- 搜索图标SVG -->
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-        <!-- 搜索图标路径 -->
-        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-      </svg>
+  <div class="search-input-container" :class="{ active: isActive }">
+    
+    <!-- 搜索按钮 -->
+    <button v-if="!isActive" class="search-icon-button" @click="openSearch">
+      🔍
     </button>
 
-    <!-- 搜索输入框（悬浮状态）：激活状态时显示 -->
-    <div class="floating-search" v-if="isActive">
-      <!-- 搜索输入框 -->
+    <!-- 搜索条 -->
+    <div v-if="isActive" class="floating-search">
       <input
-        type="text"
-        v-model="query"  <!-- 双向绑定搜索查询 -->
-        placeholder="搜索用户名、UID、帖子编号或帖子标题..."  <!-- 占位文本 -->
-        @keyup.enter="handleSearch"  <!-- 回车键触发搜索 -->
-        @blur="onBlur"  <!-- 失去焦点事件处理 -->
-        ref="searchInput"  <!-- 模板引用，用于获取DOM元素 -->
+        ref="searchInput"
+        v-model="query"
         class="floating-input"
+        placeholder="搜索用户 / UID / 帖子..."
+        @keyup.enter="handleSearch"
+        @blur="onBlur"
       />
-      <!-- 关闭按钮 -->
-      <button class="close-button" @click="closeSearch">
-        <!-- 关闭图标SVG -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-          <!-- 关闭图标路径（X形状） -->
-          <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-        </svg>
-      </button>
+
+      <button class="close-button" @click="closeSearch">✕</button>
     </div>
+
+    <!-- 实时搜索结果 -->
+    <div class="search-hint" v-if="isActive && query.trim()">
+      <div class="hint-content">
+        <!-- 当有查询输入时 -->
+        <div>
+          <!-- 显示搜索结果 -->
+          <div v-if="searchResults.length > 0">
+            <div class="hint-title">搜索结果 ({{ searchResults.length }})</div>
+            <div class="search-results">
+              <!-- 用户结果 -->
+              <div v-if="userResults.length > 0" class="result-section">
+                <div class="result-section-title">用户</div>
+                <div
+                  v-for="user in userResults"
+                  :key="'user-' + user.id"
+                  class="result-item"
+                  @click="goToUser(user.id)"
+                >
+                  <div class="result-avatar">
+                    <img :src="user.avatar || '/Head.png'" :alt="user.username" />
+                  </div>
+                  <div class="result-info">
+                    <div class="result-name">{{ user.username }}</div>
+                    <div class="result-email">{{ user.email }}</div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 帖子结果 -->
+              <div v-if="postResults.length > 0" class="result-section">
+                <div class="result-section-title">帖子</div>
+                <div
+                  v-for="post in postResults"
+                  :key="'post-' + post.id"
+                  class="result-item"
+                  @click="goToPost(post.id)"
+                >
+                  <div class="result-icon">📝</div>
+                  <div class="result-info">
+                    <div class="result-name">{{ post.title }}</div>
+                    <div class="result-meta">作者: {{ post.username }} · {{ formatDate(post.createdAt) }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 无结果 -->
+          <div v-else-if="query.trim() && !searchTimeout" class="no-results">
+            未找到匹配的用户或帖子
+          </div>
+          
+          <!-- 搜索中 -->
+          <div v-else class="no-results">
+            搜索中...
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
-// 导入Vue Composition API
-import { ref, nextTick } from 'vue'
-// 导入Vue Router相关函数
+import { ref, nextTick, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import userService from '../services/user'
+import postService from '../services/post'
 
-// 使用Vue Router获取路由器实例
 const router = useRouter()
-// 响应式变量：搜索框是否激活（显示）
+
 const isActive = ref(false)
-// 响应式变量：搜索查询文本
 const query = ref('')
-// 模板引用：搜索输入框DOM元素
 const searchInput = ref(null)
+const searchResults = ref([])
+const searchTimeout = ref(null)
 
-// 切换搜索框显示函数
-const toggleSearch = () => {
-  // 激活搜索框
+// 计算属性：分离用户和帖子结果
+const userResults = computed(() => {
+  return searchResults.value.filter(item => item.type === 'user')
+})
+
+const postResults = computed(() => {
+  return searchResults.value.filter(item => item.type === 'post')
+})
+
+// 实时搜索函数
+const performSearch = async () => {
+  const q = query.value.trim()
+  
+  if (!q) {
+    searchResults.value = []
+    return
+  }
+
+  try {
+    // 并行搜索用户和帖子
+    const [users, posts] = await Promise.all([
+      userService.searchUsers(q),
+      postService.searchPosts(q)
+    ])
+
+    // 合并结果并添加类型标识
+    const userResultsWithType = users.map(user => ({
+      ...user,
+      type: 'user'
+    }))
+
+    const postResultsWithType = posts.map(post => ({
+      ...post,
+      type: 'post'
+    }))
+
+    // 合并并限制总结果数量
+    searchResults.value = [
+      ...userResultsWithType.slice(0, 5), // 最多5个用户
+      ...postResultsWithType.slice(0, 5)  // 最多5个帖子
+    ]
+  } catch (error) {
+    console.error('搜索失败:', error)
+    searchResults.value = []
+  }
+}
+
+// 监听查询变化，使用防抖
+watch(query, (newQuery) => {
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value)
+  }
+
+  if (newQuery.trim()) {
+    searchTimeout.value = setTimeout(() => {
+      performSearch()
+    }, 300) // 300ms防抖
+  } else {
+    searchResults.value = []
+  }
+})
+
+const openSearch = () => {
   isActive.value = true
-  // 使用nextTick确保DOM已更新
+
   nextTick(() => {
-    // 如果输入框引用存在，则聚焦到输入框
-    if (searchInput.value) {
-      searchInput.value.focus()
-    }
+    searchInput.value?.focus()
   })
 }
 
-// 关闭搜索框函数
 const closeSearch = () => {
-  // 关闭搜索框
   isActive.value = false
-  // 清空搜索查询
   query.value = ''
+  searchResults.value = []
+  
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value)
+    searchTimeout.value = null
+  }
 }
 
-// 处理输入框失去焦点事件
-const onBlur = (event) => {
-  // 延迟关闭以避免点击按钮时立即关闭
-  // 使用setTimeout延迟100毫秒执行
-  setTimeout(() => {
-    // 检查失去焦点时点击的元素是否在搜索组件内部
-    // event.relatedTarget: 接收焦点的元素
-    // closest('.search-input-container'): 查找最近的搜索容器父元素
-    if (!event.relatedTarget || !event.relatedTarget.closest('.search-input-container')) {
-      // 如果点击的元素不在搜索组件内部，则关闭搜索框
-      closeSearch()
-    }
-  }, 100)
-}
-
-// 处理搜索函数（回车键触发）
 const handleSearch = () => {
-  // 如果搜索查询为空或只有空格，则直接返回
-  if (query.value.trim() === '') return
-  
-  // 导航到搜索页面，并传递搜索查询参数
+  const q = query.value.trim()
+  if (!q) return
+
   router.push({
-    path: '/search',  // 搜索页面路径
-    query: { q: query.value.trim() }  // 查询参数：q=搜索词
+    path: '/search',
+    query: { q }
   })
-  
-  // 关闭搜索框
+
   closeSearch()
 }
+
+// 跳转到用户页面
+const goToUser = (userId) => {
+  router.push(`/user/${userId}`)
+  closeSearch()
+}
+
+// 跳转到帖子页面
+const goToPost = (postId) => {
+  router.push(`/post/${postId}`)
+  closeSearch()
+}
+
+// 格式化日期
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('zh-CN', {
+    month: 'short',
+    day: 'numeric'
+  })
+}
+
+const onBlur = (e) => {
+  setTimeout(() => {
+    if (!e.relatedTarget || !e.relatedTarget.closest('.search-input-container')) {
+      closeSearch()
+    }
+  }, 120)
+}
+
+const handleKey = (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault()
+    openSearch()
+  }
+
+  if (e.key === 'Escape') {
+    closeSearch()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKey)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKey)
+  
+  if (searchTimeout.value) {
+    clearTimeout(searchTimeout.value)
+  }
+})
 </script>
 
 <style scoped>
-/* 搜索输入组件容器样式 */
+/* 容器 */
 .search-input-container {
-  position: relative;      /* 相对定位，为子元素绝对定位提供参考 */
-  display: inline-block;   /* 行内块级显示 */
+  position: relative;
+  height: 40px;
 }
 
-/* 搜索图标按钮样式 */
+/* 搜索按钮 */
 .search-icon-button {
-  background: none;        /* 透明背景 */
-  border: none;            /* 无边框 */
-  color: white;            /* 白色图标 */
-  cursor: pointer;         /* 鼠标指针为手形 */
-  padding: 8px;            /* 内边距：8px */
-  display: flex;           /* 使用Flexbox布局 */
-  align-items: center;     /* 垂直居中对齐 */
-  justify-content: center; /* 水平居中对齐 */
-  border-radius: 50%;      /* 圆形按钮 */
-  transition: background-color 0.3s; /* 背景颜色过渡效果：0.3秒 */
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
 }
 
-/* 搜索图标按钮悬停效果 */
-.search-icon-button:hover {
-  background-color: rgba(255, 255, 255, 0.1); /* 半透明白色背景 */
-}
-
-/* 悬浮搜索框样式（激活状态时显示） */
+/* 搜索条（核心） */
 .floating-search {
-  position: absolute;      /* 绝对定位，相对于父容器 */
-  top: 0;                  /* 顶部对齐 */
-  right: 0;                /* 右侧对齐 */
-  background-color: white; /* 白色背景 */
-  border-radius: 25px;     /* 大圆角（25px） */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 阴影效果 */
-  display: flex;           /* 使用Flexbox布局 */
-  align-items: center;     /* 垂直居中对齐 */
-  padding: 5px;            /* 内边距：5px */
-  z-index: 1001;           /* 高z-index，确保在其他元素上方 */
-  min-width: 300px;        /* 最小宽度：300px */
-  animation: slideIn 0.2s ease-out; /* 滑入动画：0.2秒缓出效果 */
+  position: absolute;
+  right: 0;
+  top: 0;
+
+  height: 40px;
+  width: 280px;
+
+  display: flex;
+  align-items: center;
+
+  background: #fff;
+  border-radius: 20px;
+
+  padding: 0 6px;
+
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+  animation: slideIn 0.2s ease;
 }
 
-/* 滑入动画关键帧 */
+/* 输入框 */
+.floating-input {
+  flex: 1;
+
+  height: 30px;
+  border-radius: 14px;
+
+  padding: 0 10px;
+
+  border: none;
+  outline: none;
+
+  background: #f5f5f5;
+  font-size: 14px;
+}
+
+/* 关闭按钮 */
+.close-button {
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: #eee;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* 下拉提示（关键修复） */
+.search-hint {
+  position: absolute;
+  top: 48px;
+  right: 0;
+
+  width: 280px;
+  max-width: calc(100vw - 20px);
+
+  background: white;
+  border-radius: 10px;
+
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+
+  padding: 10px;
+
+  animation: fadeIn 0.2s ease;
+}
+
+.hint-title {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.hint-content ul {
+  padding-left: 16px;
+  margin: 0;
+}
+
+.hint-content li {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+/* 搜索结果样式 */
+.search-results {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.result-section {
+  margin-bottom: 12px;
+}
+
+.result-section:last-child {
+  margin-bottom: 0;
+}
+
+.result-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #eee;
+}
+
+.result-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-bottom: 4px;
+}
+
+.result-item:hover {
+  background-color: #f5f5f5;
+}
+
+.result-item:last-child {
+  margin-bottom: 0;
+}
+
+.result-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.result-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.result-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  flex-shrink: 0;
+  font-size: 16px;
+}
+
+.result-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.result-name {
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-email {
+  font-size: 12px;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-meta {
+  font-size: 11px;
+  color: #999;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.no-results {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-size: 14px;
+}
+
+/* 动画 */
 @keyframes slideIn {
   from {
-    opacity: 0;                    /* 起始状态：完全透明 */
-    transform: translateY(-10px);  /* 起始位置：向上偏移10px */
+    opacity: 0;
+    transform: translateY(-6px);
   }
   to {
-    opacity: 1;                    /* 结束状态：完全不透明 */
-    transform: translateY(0);      /* 结束位置：回到原始位置 */
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* 悬浮输入框样式 */
-.floating-input {
-  flex: 1;                /* 弹性布局：占据剩余空间 */
-  border: none;           /* 无边框 */
-  outline: none;          /* 去除焦点轮廓 */
-  padding: 10px 15px;     /* 内边距：上下10px，左右15px */
-  font-size: 14px;        /* 字体大小：14px */
-  border-radius: 20px;    /* 圆角：20px */
-  min-width: 250px;       /* 最小宽度：250px */
+@keyframes fadeIn {
+  from { opacity: 0 }
+  to { opacity: 1 }
 }
 
-/* 关闭按钮样式 */
-.close-button {
-  background: none;        /* 透明背景 */
-  border: none;            /* 无边框 */
-  color: #666;             /* 灰色图标 */
-  cursor: pointer;         /* 鼠标指针为手形 */
-  padding: 8px;            /* 内边距：8px */
-  display: flex;           /* 使用Flexbox布局 */
-  align-items: center;     /* 垂直居中对齐 */
-  justify-content: center; /* 水平居中对齐 */
-  border-radius: 50%;      /* 圆形按钮 */
-  transition: background-color 0.3s; /* 背景颜色过渡效果：0.3秒 */
-}
+/* 手机适配 */
+@media (max-width: 480px) {
+  .floating-search {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
 
-/* 关闭按钮悬停效果 */
-.close-button:hover {
-  background-color: #f0f0f0; /* 浅灰色背景 */
-  color: #333;               /* 深灰色图标 */
+  .search-hint {
+    left: 12px;
+    right: 12px;
+    width: auto;
+  }
 }
 </style>

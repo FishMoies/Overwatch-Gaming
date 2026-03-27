@@ -94,7 +94,7 @@
                     <div v-else class="no-role">未设置</div>
                   </div>
                   {{ roleDisplayName }}
-                  <button class="change-role-button" @click="showChangeRole = true" v-if="isViewingOwnProfile">更改</button>
+                  <button class="change-role-button" @click="showChangeRole = true" v-if="isViewingOwnProfile" >更改</button>
                 </span>
               </div>
             </div>
@@ -1358,7 +1358,7 @@ watch(userInfo, (newUser) => {
   margin-top: 60px;
   padding: 0 20px;
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: 380px 1fr; /*重要！！：这一数值调整侧边栏宽度*/
   gap: 30px;
 }
 
@@ -1915,9 +1915,8 @@ watch(userInfo, (newUser) => {
 .role-display {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-width: 0; /* 防止溢出 */
+  justify-content: flex-end;  /* 关键 */
+  gap: 8px; /* 可选，让元素别挤一起 */
 }
 
 .role-icons {
