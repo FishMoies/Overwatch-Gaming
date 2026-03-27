@@ -177,6 +177,18 @@ onUnmounted(() => {
           </p>
         </div>
       </div>
+
+      <!-- 第五屏 -->
+      <div class="section blank-page">
+        <div class="content">
+          <h1 class="main-title">第五屏</h1>
+          <p class="subtitle" style="padding-left: 10px; ">
+            这里是你要的第三个空白页面，可以放页脚或联系方式
+          </p>
+        </div>
+      </div>
+
+
     </div>
   </div>
 </template>
