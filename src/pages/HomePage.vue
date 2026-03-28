@@ -7,7 +7,7 @@ import { useRouter } from 'vue-router'
 import auth from '../services/auth.js'
 // 导入fullpage.js库，用于创建全屏滚动效果
 import fullpage from 'fullpage.js'
-import SupportGallery from '@/components/SupportGallery.vue'//奶位嵌套
+import SupportGallery from '/src/pages/HomePages/SupportGallery.vue'//奶位嵌套
 // 使用Vue Router获取路由器实例
 const router = useRouter()
 // 响应式变量：用户登录状态
@@ -58,6 +58,24 @@ const initFullpage = () => {
     }
   })
 }
+// 提前获取元素（更高效）
+let leftChar = null
+let rightChar = null
+
+//视差移动
+function handleMouseMove(e) {
+  const x = e.clientX
+  const w = window.innerWidth
+  const offset = (x / w - 0.5) * 12
+
+  if (leftChar && rightChar) {
+    leftChar.style.transform =
+      `translateX(${offset * 2}px) translateY(${offset * 1}px)`
+
+    rightChar.style.transform =
+      `translateX(${offset * 1}px) translateY(${offset * 1}px)`
+  }
+}
 
 // 组件挂载时的生命周期钩子
 onMounted(() => {
@@ -65,6 +83,12 @@ onMounted(() => {
   checkLoginStatus()
   // 监听storage事件，用于跨标签页同步登录状态
   window.addEventListener('storage', checkLoginStatus)
+  // 组件挂载后再获取 DOM
+  leftChar = document.querySelector('.char-left')
+  rightChar = document.querySelector('.char-right')
+
+  // 监听鼠标移动
+  window.addEventListener('mousemove', handleMouseMove)
   
   // 使用nextTick确保DOM已完全渲染
   nextTick(() => {
@@ -77,6 +101,7 @@ onMounted(() => {
 onUnmounted(() => {
   // 移除storage事件监听器
   window.removeEventListener('storage', checkLoginStatus)
+  window.removeEventListener('mousemove', handleMouseMove)// 防止内存泄漏
   
   // 如果存在fullpage实例，销毁它并置空
   if (fpInstance) {
@@ -407,4 +432,6 @@ onUnmounted(() => {
   font-family:'SmileySans Oblique',sans-serif;
   font-size:1.2rem;
 }
+
+
 </style>
