@@ -382,7 +382,7 @@ onMounted(() => loadPostDetail())
 .restricted-hint { color: #6c757d; font-size: 0.9rem; }
 .restricted-hint strong { color: #dc3545; }
 
-.post-text { font-size: 1.05rem; line-height: 1.85; color: #e0e0e0; overflow-wrap: break-word; }
+.post-text { font-family: var(--content-font); font-size: 1.05rem; line-height: 1.85; color: #e0e0e0; overflow-wrap: break-word; }
 .post-text p { margin: 0 0 1em 0; }
 .post-text h1, .post-text h2, .post-text h3 { margin: 1.2em 0 0.6em 0; line-height: 1.3; font-weight: 700; color: #ffffff; }
 .post-text h1 { font-size: 1.7em } .post-text h2 { font-size: 1.4em } .post-text h3 { font-size: 1.15em }
@@ -507,7 +507,7 @@ onMounted(() => loadPostDetail())
 .comment-action-btn.danger { color: #ef4444; border-color: rgba(220,53,69,0.2); }
 .comment-action-btn.danger:hover { background: #ef4444; color: white; border-color: #ef4444; }
 
-.comment-content { font-size: 0.92rem; line-height: 1.65; color: #e0e0e0; }
+.comment-content { font-family: var(--content-font); font-size: 0.92rem; line-height: 1.65; color: #e0e0e0; }
 .comment-content :deep(.bilibili-video-wrapper) { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; margin: 12px 0; border-radius: 8px; background: #000; }
 .comment-content :deep(.bilibili-video-wrapper iframe) { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 .comment-pid { margin-top: 8px; color: #4a5568; font-size: 0.82rem; }

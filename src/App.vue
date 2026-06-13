@@ -62,3 +62,11 @@ const hideNavBar = computed(() => route.meta && route.meta.hideNavBar)
 }
 
 </style>
+
+<!-- 全局 CSS 变量：在非 scoped 的 style 块中定义，确保子组件能通过 var() 访问 -->
+<style>
+:root {
+  /* 用户生成内容区域使用系统字体栈，避免子集化字体缺失字符导致多字体混杂 */
+  --content-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "WenQuanYi Micro Hei", sans-serif;
+}
+</style>

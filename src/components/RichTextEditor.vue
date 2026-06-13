@@ -248,7 +248,7 @@ defineExpose({
 .char-count { text-align: right; padding: 8px 16px; font-size: 0.9em; color: #a0aec0; border-top: 1px solid #2a2a4a; background: #1a1a2e; }
 
 /* TipTap编辑器内部样式 */
-.tiptap-editor { outline: none; min-height: 150px; }
+.tiptap-editor { font-family: var(--content-font); outline: none; min-height: 150px; }
 .tiptap-editor p { margin: 0 0 1em 0; line-height: 1.6; color: #e0e0e0; }
 .tiptap-editor h1 { font-size: 2em; font-weight: bold; margin: 1em 0 0.5em; line-height: 1.2; color: #e0e0e0; }
 .tiptap-editor h2 { font-size: 1.5em; font-weight: bold; margin: 1em 0 0.5em; line-height: 1.3; color: #e0e0e0; }

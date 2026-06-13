@@ -287,6 +287,7 @@ function renderPreview(html, max = 150) {
 }
 
 .post-content {
+  font-family: var(--content-font);
   color: #a0aec0;
   line-height: 1.6;
   margin-bottom: 16px;
