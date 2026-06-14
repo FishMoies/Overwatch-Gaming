@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import bcrypt from 'bcryptjs'
 import { getDb, getOne, getAll, run, insert } from '../db.js'
 import { adminMiddleware } from '../middleware/auth.js'
 
@@ -312,6 +313,34 @@ router.post('/sql', adminMiddleware, (req, res) => {
   } catch (error) {
     console.error('SQL 查询失败:', error)
     res.status(500).json({ success: false, message: `查询失败: ${error.message}` })
+  }
+})
+
+// 管理员重置用户密码（不需要旧密码）
+router.put('/users/:id/reset-password', adminMiddleware, async (req, res) => {
+  try {
+    await getDb()
+    const userId = req.params.id
+    const { newPassword } = req.body
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.json({ success: false, message: '新密码长度至少为6位' })
+    }
+
+    // 验证目标用户存在
+    const target = getOne('SELECT id, username FROM users WHERE id = ?', [userId])
+    if (!target) {
+      return res.json({ success: false, message: '用户不存在' })
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10)
+    run("UPDATE users SET password_hash = ?, updated_at = datetime('now', 'localtime') WHERE id = ?", [passwordHash, userId])
+
+    console.log(`[Admin] 管理员已重置用户 ${target.username} (id=${userId}) 的密码`)
+    res.json({ success: true, message: `用户 ${target.username} 的密码已重置` })
+  } catch (error) {
+    console.error('管理员重置密码失败:', error)
+    res.status(500).json({ success: false, message: '重置密码失败' })
   }
 })
 

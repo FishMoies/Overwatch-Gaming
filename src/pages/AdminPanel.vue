@@ -128,6 +128,7 @@
                 </td>
                 <td class="actions-cell">
                   <button class="btn btn-sm btn-edit" @click="openEditModal(row)">编辑</button>
+                  <button v-if="currentTable === 'users'" class="btn btn-sm btn-password" @click="resetPassword(row)">🔑 改密</button>
                   <button class="btn btn-sm btn-delete" @click="confirmDelete(row)">删除</button>
                 </td>
               </tr>
@@ -456,6 +457,31 @@ async function confirmDelete(row) {
     }
   } catch (e) {
     alert('删除失败: ' + e.message)
+  }
+}
+
+async function resetPassword(row) {
+  const rowId = row.id || row[primaryKey.value]
+  const username = row.username || `用户 #${rowId}`
+  const newPassword = prompt(
+    `请输入 "${username}" (id=${rowId}) 的新密码（至少6位）：`
+  )
+  if (!newPassword) return
+  if (newPassword.length < 6) {
+    alert('密码长度至少为6位')
+    return
+  }
+  if (!confirm(`确认将用户 "${username}" 的密码重置为 "***"（${newPassword.length} 位）？`)) return
+
+  try {
+    const res = await adminApi.resetUserPassword(rowId, newPassword)
+    if (res.success) {
+      alert(`✅ ${res.message}`)
+    } else {
+      alert('重置失败: ' + (res.message || '未知错误'))
+    }
+  } catch (e) {
+    alert('重置失败: ' + e.message)
   }
 }
 
@@ -963,6 +989,15 @@ onMounted(() => {
 
 .btn-edit:hover {
   background: #3a7aaa;
+}
+
+.btn-password {
+  background: #2a7a5a;
+  color: #fff;
+}
+
+.btn-password:hover {
+  background: #3a9a7a;
 }
 
 .btn-delete {

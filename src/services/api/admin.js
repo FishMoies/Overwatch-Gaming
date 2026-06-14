@@ -46,5 +46,13 @@ export const adminApi = {
 
   getStats() {
     return request('/admin/stats', { auth: true })
+  },
+
+  resetUserPassword(userId, newPassword) {
+    return request(`/admin/users/${encodeURIComponent(userId)}/reset-password`, {
+      method: 'PUT',
+      body: { newPassword },
+      auth: true
+    })
   }
 }
