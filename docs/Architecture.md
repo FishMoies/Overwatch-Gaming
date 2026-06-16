@@ -7,7 +7,7 @@
 ```
 浏览器 (Vue 3)
     │
-    │  src/services/api.js 统一封装 fetch 客户端
+    │  src/services/api/core.js 统一封装 fetch 客户端
     │  自动从 localStorage/sessionStorage 读取 JWT token
     │  注入 Authorization: Bearer <token> 请求头
     │
@@ -31,7 +31,7 @@ Express Server (:3001)
     │
     ▼
   server/routes/*.js
-    │  按领域拆分的路由模块
+    │  按领域拆分的路由模块，自动扫描注册
     │  每个路由文件自包含：参数校验 → SQL 操作 → 响应格式化
     │
     ▼
@@ -63,6 +63,22 @@ server: {
 
 前端构建产物（`dist/` 目录）部署到 GitHub Pages，路径基址设为 `/Overwatch-Gaming/`。Express 后端可部署到任意 Node.js 环境——VPS、云服务实例或容器平台。生产环境下需要通过 Nginx 或类似的反向代理将 `/api` 请求指向 Express 服务器。
 
+## 路由自动注册
+
+后端 `server/index.js` 通过自动扫描 `server/routes/` 目录，将每个 `.js` 文件按文件名注册到对应的 `/api/{文件名}` 路径：
+
+```js
+const routesDir = path.join(__dirname, 'routes')
+const routeFiles = fs.readdirSync(routesDir).filter(f => f.endsWith('.js'))
+for (const file of routeFiles) {
+  const routeName = file.replace('.js', '')
+  const { default: router } = await import(`./routes/${file}`)
+  app.use(`/api/${routeName}`, router)
+}
+```
+
+因此添加新的路由模块只需创建文件，无需手动注册路由。自动注册的模块包含：`auth`、`posts`、`teams`、`notifications`、`announcements`、`admin`、`heroes`、`migrate`、`preference`、`seed`、`git`。
+
 ## 认证闭环
 
 认证闭环包含 5 个关键步骤：
@@ -78,9 +94,12 @@ server: {
    └── 存储键名: 'currentUser'
 
 3. 注入
-   ├── api.js request() 函数自动从存储读取 token
+   ├── api/core.js request() 函数自动从存储读取 token
    ├── 注入 Authorization: Bearer <token> 请求头
-   └── 根据 auth 选项决定是否强制携带 token
+   └── 根据 auth 选项决定是否携带 token：
+       ├── true → 必需（无 token 时仍发送请求，但不带 Authorization 头）
+       ├── 'optional' → 可选（有 token 则带，无则静默跳过）
+       └── false/省略 → 不使用认证
 
 4. 校验
    ├── authMiddleware 解析 JWT → 挂载 req.user
@@ -180,7 +199,7 @@ CORS 配置在 `server/index.js` 中，通过 `origin` 回调函数校验：
 
 ## 前端路由体系
 
-项目使用 Vue Router 4，采用 **Hash 模式**（`createWebHashHistory`），共包含 17 条路由规则：
+项目使用 Vue Router 4，采用 **Hash 模式**（`createWebHashHistory`），共包含 18 条路由规则：
 
 | 路径 | 名称 | 对应页面 | 认证要求 |
 |------|------|----------|----------|
@@ -189,7 +208,7 @@ CORS 配置在 `server/index.js` 中，通过 `origin` 回调函数校验：
 | `/register` | Register | 注册 | 无 |
 | `/login` | Login | 登录 | 无 |
 | `/user/:uid` | UserProfile | 用户面板 | `requiresAuth` |
-| `/user` | User | 自动重定向到 `/user/:uid` | - |
+| `/user` | User | 自动重定向到 `/user/:uid` 或 `/login` | - |
 | `/jointeam` | JoinTeam | 加入/创建战队 | `requiresAuth` |
 | `/createpost` | CreatePost | 发布帖文 | `requiresAuth` |
 | `/post/:pid` | PostDetail | 帖子详情 | 无 |
@@ -198,7 +217,7 @@ CORS 配置在 `server/index.js` 中，通过 `origin` 回调函数校验：
 | `/notifications` | Notifications | 通知列表 | 无 |
 | `/announcements` | Announcements | 公告列表 | 无 |
 | `/heroes` | Heroes | 英雄图鉴 | 无 |
-| `/generate` | Generate | 数据生成器 | `requiresAuth` + `requiresAdmin` |
+| `/generate` | Generate | 数据生成器 | `requiresAuth` |
 | `/adminpower` | AdminPanel | 管理员面板 | `requiresAuth` + `requiresAdmin` |
 | `/error/:code` | Error | 错误页 | 无 |
 | `/:pathMatch(.*)*` | NotFound | 404 → 重定向到 `/error/404` | - |
@@ -224,6 +243,14 @@ CORS 配置在 `server/index.js` 中，通过 `origin` 回调函数校验：
 - 含有 `meta.targetSection` 的路由（如 `/about`）会平滑滚动到对应章节
 - 带有 savedPosition 的返回操作恢复到之前滚动位置
 - 其余导航均滚动到页面顶部
+
+## JSON 体限制
+
+Express 配置了 10MB 的 JSON 请求体大小限制：
+
+```js
+app.use(express.json({ limit: '10mb' }))
+```
 
 ## 响应格式规范
 

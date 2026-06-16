@@ -429,11 +429,12 @@ const sql = `UPDATE \`${tableName}\` SET ${setClauses.join(', ')} WHERE \`${pk}\
 |------|------|----------|
 | `GET /api/admin/tables` | 获取所有表结构 | 含列名、类型、行数 |
 | `GET /api/admin/table/:name` | 分页查看表数据 | 支持排序、搜索 |
-| `POST /api/admin/table/:name` | 插入新行 | 自动过滤主键 |
+| `POST /api/admin/table/:name` | 插入新行 | 自动过滤主键、JSON 字段序列化 |
 | `PUT /api/admin/table/:name/:id` | 更新行 | JSON 字段自动序列化 |
 | `DELETE /api/admin/table/:name/:id` | 删除行 | — |
 | `POST /api/admin/sql` | 执行只读 SQL | SELECT/PRAGMA 仅限 |
 | `GET /api/admin/stats` | 数据库统计概览 | 各表行数 + 管理员数 |
+| `PUT /api/admin/users/:id/reset-password` | 管理员重置密码 | 无需旧密码 |
 
 ### 前端交互
 
@@ -501,7 +502,7 @@ const sql = `UPDATE \`${tableName}\` SET ${setClauses.join(', ')} WHERE \`${pk}\
 | 编辑器组件 | `src/components/RichTextEditor.vue` |
 | 内容渲染器 | `src/utils/contentFilter.js` |
 | 后端 API | `server/routes/git.js` |
-| 服务端注册 | `server/index.js`（`app.use('/api/git', gitRoutes)`） |
+| 服务端注册 | `server/index.js`（自动扫描注册） |
 
 ## 8. 个性化推荐系统
 
@@ -571,7 +572,7 @@ POST /api/preference/record → 数据库 preference 递增
 |------|------|
 | 后端 API | `server/routes/preference.js` |
 | 前端服务 | `src/services/preference.js` |
-| 前端 API 封装 | `src/services/api.js`（`preferenceApi`） |
+| 前端 API 封装 | `src/services/api/preference.js` |
 | 数据库字段 | `server/db.js`（`users.preference`） |
 
 ## 9. 种子数据生成器
@@ -580,7 +581,7 @@ POST /api/preference/record → 数据库 preference 递增
 
 ### 种子数据文件
 
-种子数据定义在 `tools/seed-data.json` 中，包含预定义的用户和帖子：
+种子数据定义在 `public/seed-data.json` 中，包含预定义的用户和帖子：
 
 ```json
 {
@@ -591,7 +592,7 @@ POST /api/preference/record → 数据库 preference 递增
       "password": "123123",
       "role": "[\"damage\"]",
       "userrank": 1,
-      "avatar": "/Head.png"
+      "avatar": "/default-avatar.png"
     }
   ],
   "posts": [
@@ -618,7 +619,7 @@ POST /api/preference/record → 数据库 preference 递增
 管理员访问 /generate 页面
     │
     ▼
-读取 tools/seed-data.json → 显示数据概览
+读取 public/seed-data.json → 显示数据概览
     │
     ▼
 点击"注入种子数据"按钮
@@ -642,22 +643,10 @@ POST /api/seed/inject（需管理员认证）
 - 帖子标题已存在 → 跳过，标记为"已存在"
 - 只报告实际新建的数据量
 
-### 辅助工具
-
-| 文件 | 说明 |
-|------|------|
-| `tools/seed-data.json` | 种子数据定义文件 |
-| `tools/generate-seed.js` | 种子数据生成脚本 |
-| `tools/append-seed.js` | 追加种子数据脚本 |
-| `server/routes/seed.js` | 后端 API |
-| `src/pages/GeneratePage.vue` | 前端管理页面 |
-
 ### 相关文件
 
 | 文件 | 路径 |
 |------|------|
 | 后端 API | `server/routes/seed.js` |
 | 前端页面 | `src/pages/GeneratePage.vue` |
-| 种子数据 | `tools/seed-data.json` |
-| 生成工具 | `tools/generate-seed.js` |
-| 追加工具 | `tools/append-seed.js` |
+| 种子数据 | `public/seed-data.json` |

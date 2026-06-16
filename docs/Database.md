@@ -66,8 +66,9 @@ CREATE TABLE users (
   is_admin      INTEGER NOT NULL DEFAULT 0,
   uid           TEXT UNIQUE,
   userrank      INTEGER NOT NULL DEFAULT 0,
-  avatar        TEXT NOT NULL DEFAULT '/Head.png',
+  avatar        TEXT NOT NULL DEFAULT '/default-avatar.png',
   team_id       INTEGER,
+  nickname      TEXT,
   created_at    TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
   updated_at    TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
 )
@@ -83,8 +84,9 @@ CREATE TABLE users (
 | `is_admin` | INTEGER | 遗存字段，兼容旧数据，后续版本应使用 `userrank` 判断权限 |
 | `uid` | TEXT | 唯一公开标识符，格式如 `u-20260101-0000` |
 | `userrank` | INTEGER | 用户等级：0=访客、1=玩家、2=受信任、3=管理员 |
-| `avatar` | TEXT | 头像 URL 路径 |
+| `avatar` | TEXT | 头像 URL 路径，默认 `/default-avatar.png` |
 | `team_id` | INTEGER | 所属战队 ID（外键到 teams 表） |
+| `nickname` | TEXT | 用户昵称（可选），若存在则作为 `displayName` 显示 |
 | `created_at` | TEXT | 创建时间（本地时区） |
 | `updated_at` | TEXT | 最后更新时间（本地时区） |
 | `preference` | TEXT | JSON 对象，存储用户兴趣偏好标签计数，如 `{"源氏": 3, "total": 10}` |
@@ -151,6 +153,8 @@ CREATE INDEX idx_posts_category ON posts(category)
 // server/routes/posts.js — 获取帖子详情时
 run("UPDATE posts SET views = views + 1 WHERE pid = ?", [pid])
 ```
+
+前端也可通过 `POST /api/posts/:pid/views` 接口手动递增浏览量。
 
 #### tags — 帖子标签
 
@@ -308,6 +312,10 @@ CREATE INDEX idx_ow_heroes_role ON ow_heroes(role)
 CREATE UNIQUE INDEX idx_ow_heroes_key ON ow_heroes(hero_key)
 ```
 
+## nickname 字段 — 用户昵称
+
+`users` 表的 `nickname` 字段存储用户的可选昵称。如果设置，`displayName` 将显示为昵称而非用户名。
+
 ## preference 字段 — 用户偏好
 
 `users` 表的 `preference` 字段存储用户的兴趣偏好数据，格式为 JSON 对象：
@@ -335,6 +343,7 @@ CREATE UNIQUE INDEX idx_ow_heroes_key ON ow_heroes(hero_key)
 - `is_admin` ← 兼容旧数据的权限字段
 - `uid` ← 公开唯一标识符
 - `userrank` ← 用户等级
+- `nickname` ← 用户昵称（可选）
 - `preference` ← 用户偏好数据（默认 `{"total":0}`）
 
 **posts 表增量迁移**：
@@ -443,6 +452,10 @@ if (!user) {
   }
 }
 ```
+
+## 种子数据
+
+种子数据定义在 `public/seed-data.json` 中，通过管理员页面 `/generate` 或 API `POST /api/seed/inject` 注入数据库。详见 [种子数据生成器](Systems.md#9-种子数据生成器)。
 
 ## 数据迁移脚本
 

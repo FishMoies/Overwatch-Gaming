@@ -27,7 +27,9 @@ Vite 的构建配置位于 `vite.config.js`：
 ```js
 // 关键配置项
 export default defineConfig({
-  base: '/Overwatch-Gaming/',  // GitHub Pages 子路径部署
+  base: process.env.NODE_ENV === 'production'
+    ? '/Overwatch-Gaming/'    // 生产环境：GitHub Pages 子路径
+    : './',                    // 开发环境：相对路径
   build: {
     outDir: 'dist',
     // 其他构建选项...
@@ -48,10 +50,15 @@ dist/
 │   └── ...
 ├── favicon.ico
 └── public/              # 复制的静态资源
-    ├── Head.png
-    ├── Heading.png
-    ├── ow_icon.svg
-    └── ...
+    ├── default-avatar.png
+    ├── default-avatar.webp
+    ├── logo.svg
+    ├── font-smiley-sans.ttf
+    ├── font-maple-mono.ttf
+    ├── seed-data.json
+    ├── damage/
+    ├── support/
+    └── tank/
 ```
 
 ## 2. GitHub Pages 部署

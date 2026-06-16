@@ -9,7 +9,7 @@
 如果你是第一次接触本项目，建议按以下路径阅读：
 
 1. 查看 `server/index.js` —— 理解后端入口
-2. 查看 `src/services/api.js` —— 理解前后端通信方式
+2. 查看 `src/services/api/core.js` —— 理解前后端通信方式
 3. 查看 `src/stores/auth.js` —— 理解用户状态流
 4. 查看 `src/pages/` —— 理解页面组织方式
 
@@ -72,19 +72,22 @@
 Overwatch-Gaming/
 ├── public/                    # 静态资源（不经过 Vite 打包处理）
 │   ├── favicon.ico            # 网站图标
-│   ├── Head.png               # 默认用户头像
-│   ├── Heading.png            # 页面横幅
-│   ├── ow_icon.svg            # 守望先锋图标
-│   ├── SmileySans-Oblique.ttf # 自定义标题字体
-│   ├── MapleMono-CN-Regular.ttf # 自定义等宽字体
-│   ├── 默认头图设计.psd       # PSD 设计源文件
-│   ├── 职责专题页面参考.psd
-│   ├── seed-data.json         # 种子数据（前端加载用）
-│   └── Nsc/                   # 其他静态子目录
+│   ├── logo.svg               # 守望先锋图标
+│   ├── default-avatar.png     # 默认用户头像（PNG 格式）
+│   ├── default-avatar.webp    # 默认用户头像（WebP 格式）
+│   ├── font-smiley-sans.ttf   # 自定义标题字体（SmileySans Oblique）
+│   ├── font-maple-mono.ttf    # 自定义等宽字体（MapleMono CN Regular）
+│   ├── role-icon-damage.webp  # 输出职责图标
+│   ├── role-icon-support.webp # 支援职责图标
+│   ├── role-icon-tank.webp    # 重装职责图标
+│   ├── seed-data.json         # 种子数据
+│   ├── damage/                # 输出英雄图片
+│   ├── support/               # 支援英雄图片
+│   └── tank/                  # 重装英雄图片
 ├── src/                       # 前端源代码
-│   ├── App.vue                # 根组件（NavBar 条件渲染、过渡动画、Popup 挂载）
-│   ├── main.js                # 应用入口（Pinia + Router + 全局组件注册）
-│   ├── router/index.js        # 路由配置（17 条规则 + 守卫 + 滚动行为）
+│   ├── App.vue                # 根组件（NavBar 条件渲染、过渡动画、Popup 挂载、@font-face 声明）
+│   ├── main.js                # 应用入口（Pinia + Router + 全局组件注册 + 彩蛋）
+│   ├── router/index.js        # 路由配置（18 条规则 + 守卫 + 滚动行为）
 │   ├── components/            # 可复用组件
 │   │   ├── NavBar.vue         # 导航栏
 │   │   ├── SearchInput.vue    # 搜索输入框
@@ -108,26 +111,51 @@ Overwatch-Gaming/
 │   │   ├── AdminPanel.vue     # 管理后台
 │   │   ├── HeroesPage.vue     # 英雄图鉴
 │   │   ├── GeneratePage.vue   # 数据生成器（管理员）
+│   │   ├── JoinTeamPage.vue   # 加入/创建战队
 │   │   ├── ErrorPage.vue      # 错误页面
 │   │   └── HomePages/         # 首页子组件
 │   │       ├── HeroSection.vue
 │   │       ├── RolesSection.vue
+│   │       ├── RoleGallery.vue
+│   │       ├── roleConfig.js
+│   │       ├── DamageGallery.vue
+│   │       ├── TankGallery.vue
 │   │       ├── SupportGallery.vue
 │   │       └── BlankSection.vue
-│   ├── UserPanel/             # 用户面板子组件
+│   ├── pages/UserPanel/       # 用户面板子组件
 │   │   ├── ProfileHeader.vue  # 个人资料头部
 │   │   ├── OverviewTab.vue    # 总览标签页
 │   │   ├── PostsTab.vue       # 帖子标签页
 │   │   ├── TeamTab.vue        # 战队标签页
 │   │   ├── SettingsTab.vue    # 设置标签页
-│   │   └── modals/            # 弹窗表单
+│   │   └── modals/            # 弹窗表单（小写）
+│   │       ├── modal-change-password.vue
+│   │       ├── modal-change-role.vue
+│   │       ├── modal-delete-account.vue
+│   │       ├── modal-team-create.vue
+│   │       ├── modal-team-join.vue
+│   │       └── modal-team-leave.vue
 │   ├── services/              # API 调用封装层
-│   │   ├── api.js             # 统一 fetch 客户端 + 11 组 API 封装
+│   │   ├── api.js             # 向后兼容入口（重新导出 api/ 目录）
+│   │   ├── api/               # API 子模块（按领域拆分）
+│   │   │   ├── index.js       # 聚合导出
+│   │   │   ├── core.js        # 统一 HTTP 客户端（request / getToken / 会话管理）
+│   │   │   ├── auth.js        # 认证 API
+│   │   │   ├── posts.js       # 帖子 API
+│   │   │   ├── teams.js       # 战队 API
+│   │   │   ├── notifications.js # 通知 API
+│   │   │   ├── heroes.js      # 英雄 API
+│   │   │   ├── announcements.js # 公告 API
+│   │   │   ├── preference.js  # 偏好 API
+│   │   │   ├── admin.js       # 管理后台 API（含 resetPassword）
+│   │   │   └── git.js         # Git 仓库 API
 │   │   ├── auth.js            # 旧的 localStorage 认证服务（向后兼容）
 │   │   ├── post.js            # 帖子辅助服务
 │   │   ├── user.js            # 用户搜索服务
 │   │   ├── preference.js      # 偏好记录与排序服务
-│   │   └── notification.js    # 通知轮询服务
+│   │   ├── notification.js    # 通知轮询服务
+│   │   ├── team.js            # 战队辅助服务
+│   │   └── avatarService.js   # 头像服务
 │   ├── stores/                # Pinia 全局状态
 │   │   ├── auth.js            # 认证状态
 │   │   ├── post.js            # 帖子状态
@@ -139,37 +167,53 @@ Overwatch-Gaming/
 │   │   ├── encode.js          # 编码工具
 │   │   ├── mentionParser.js   # @提及 HTML 解析器
 │   │   ├── contentFilter.js   # 内容过滤器（BV标签、Git标签渲染）
-│   │   └── pop.js             # 弹窗快捷调用工具
+│   │   ├── pop.js             # 弹窗快捷调用工具
+│   │   ├── helpers.js         # 通用辅助函数
+│   │   └── easterEgg.js       # 开发者彩蛋
 │   ├── constants/             # 常量定义
 │   │   ├── rankMap.js         # 用户等级 + 帖子标记映射表
+│   │   ├── roles.js           # 守望先锋职责配置
 │   │   └── popupStyles.json   # 弹窗样式主题配置
-│   └── composables/           # Vue 组合式函数
+│   └── types/                 # 类型定义
+│       └── fullpage.d.ts      # TypeScript 声明
 ├── server/                    # 后端源代码
-│   ├── index.js               # Express 服务入口（CORS + 限流 + 路由挂载 + 健康检查）
+│   ├── index.js               # Express 服务入口（CORS + 限流 + 路由自动扫描 + 健康检查）
 │   ├── db.js                  # OmaeSQL 数据库工具层（8 张表 + 索引 + 增量迁移）
 │   ├── migrate-v2.js          # Supabase → SQLite 迁移脚本
 │   ├── check_db.js            # 数据库文件诊断脚本
 │   ├── setup-env.js           # 交互式 .env 配置引导
 │   ├── package.json           # 后端依赖
+│   ├── bootstrap/env.js       # 环境变量自动引导模块
 │   ├── middleware/auth.js     # 三层认证中间件
-│   ├── routes/                # 路由模块（共 11 个路由文件）
-│   │   ├── auth.js            # 认证与用户管理（10 个端点）
-│   │   ├── posts.js           # 帖子 CRUD（11 个端点）
+│   ├── routes/                # 路由模块（自动扫描注册，共 11 个路由文件）
+│   │   ├── auth.js            # 认证与用户管理（11 个端点）
+│   │   ├── posts.js           # 帖子 CRUD（12 个端点）
 │   │   ├── teams.js           # 战队管理（5 个端点）
 │   │   ├── notifications.js   # 通知管理（5 个端点）
 │   │   ├── announcements.js   # 公告管理（4 个端点）
 │   │   ├── heroes.js          # 英雄图鉴（3 个端点）
-│   │   ├── admin.js           # 管理后台（7 个端点）
+│   │   ├── admin.js           # 管理后台（8 个端点）
 │   │   ├── migrate.js         # 数据迁移（1 个端点）
 │   │   ├── preference.js      # 个性化偏好（2 个端点）
 │   │   ├── seed.js            # 种子数据注入（1 个端点，管理员）
 │   │   └── git.js             # Git 仓库信息（1 个端点）
-│   └── utils/identifiers.js   # UID/PID 生成器
-├── tools/
-│   ├── migrate-localstorage.js # 浏览器 localStorage 数据迁移到 SQLite
-│   ├── seed-data.json          # 种子数据定义文件（后端注入用）
-│   ├── generate-seed.js        # 种子数据生成脚本
-│   └── append-seed.js          # 追加种子数据脚本
+│   └── utils/                 # 后端工具函数
+│       ├── identifiers.js     # UID/PID 生成器
+│       ├── validators.js      # 输入校验函数
+│       └── banner.js          # ASCII Banner 输出
+├── scripts/
+│   └── optimize-assets.cjs    # 资源优化脚本
+├── docs/                      # 项目文档
+│   ├── API-Reference.md
+│   ├── Architecture.md
+│   ├── Database.md
+│   ├── Deployment.md
+│   ├── Development.md
+│   ├── QuickStart.md
+│   ├── Systems.md
+│   ├── HomePage.png
+│   ├── KUMIKO API.png
+│   └── SQL.png
 ├── vite.config.js             # Vite 构建配置（proxy + base + alias）
 ├── index.html                 # HTML 入口
 ├── package.json               # 前端依赖
@@ -190,16 +234,17 @@ Overwatch-Gaming/
 |------|----------|----------|-------------|
 | `src/pages/` | 页面级组件（每个文件对应一条路由） | 可复用的 UI 组件、非路由组件 | PascalCase — `PostDetailPage.vue` |
 | `src/pages/HomePages/` | 首页专用的子组件（仅被首页引用） | 可跨页面复用的组件 | PascalCase — `HeroSection.vue` |
-| `src/UserPanel/` | 用户面板专用子组件 | 其他页面的组件 | PascalCase — `ProfileHeader.vue` |
-| `src/UserPanel/modals/` | 用户面板弹窗表单合集 | 独立页面、全局弹窗 | 小写，如 `change-password.vue` |
+| `src/pages/UserPanel/` | 用户面板专用子组件 | 其他页面的组件 | PascalCase — `ProfileHeader.vue` |
+| `src/pages/UserPanel/modals/` | 用户面板弹窗表单合集 | 独立页面、全局弹窗 | 小写连字符，如 `modal-change-password.vue` |
 | `src/components/` | 可跨页面复用的 UI 组件 | 页面级业务逻辑、直接调用 store | PascalCase — `RichTextEditor.vue` |
 | `src/components/` 中的 `.js` | TipTap 自定义扩展（编辑器插件） | 业务工具函数、API 封装 | PascalCase — `MentionExtension.js` |
 | `src/stores/` | Pinia 全局状态仓库 | 工具函数、API 调用逻辑 | 小写 camelCase — `auth.js` |
-| `src/services/` | API 调用封装、数据服务 | UI 组件、store 逻辑 | 小写 camelCase — `api.js` |
+| `src/services/` | API 调用封装、数据服务 | UI 组件、store 逻辑 | 小写 camelCase — `user.js` |
+| `src/services/api/` | 按领域拆分的 API 子模块 | 业务逻辑（仅限 HTTP 封装） | 小写 camelCase — `posts.js` |
 | `src/utils/` | 纯工具函数（无副作用、无 API 调用） | 有副作用的操作、store 修改 | 小写 camelCase — `pop.js` |
 | `src/constants/` | 常量定义、映射表、静态 JSON 配置 | 动态数据、运行时计算 | 小写 camelCase — `rankMap.js` |
 | `src/router/` | Vue Router 配置（单一入口） | 组件、store | `index.js` 固定文件名 |
-| `src/composables/` | Vue 组合式函数（useXxx 模式） | 组件、工具函数 | camelCase 前缀 `use` — `useAuth.js` |
+| `src/types/` | TypeScript 类型声明 | 业务逻辑 | 小写 camelCase — `fullpage.d.ts` |
 
 **常见错误示例**：
 
@@ -248,9 +293,9 @@ server/db.js   ──→  数据库操作（OmaeSQL 工具层）
 
 ```
 pages/ → components/ + stores/ + services/
-stores/ → services/ → api.js → (HTTP)
+stores/ → services/ → api/ → (HTTP)
 components/ → utils/
-services/ → api.js
+services/ → api/
 utils/ → (无依赖)
 ```
 
@@ -269,6 +314,9 @@ import App from './App.vue'
 import router from './router/index.js'
 import UserrankBadge from './components/UserrankBadge.vue'
 
+// 🥚 开发者彩蛋 - 咕咕嘎嘎
+import './utils/easterEgg.js'
+
 const app = createApp(App)
 const pinia = createPinia()
 
@@ -276,10 +324,19 @@ app.use(pinia)          // 注册 Pinia 状态管理
 app.use(router)         // 注册 Vue Router
 app.component('userrankBadge', UserrankBadge)  // 全局注册等级徽章组件
 app.mount('#app')       // 挂载到 #app 元素
+
+// 所有资源加载完毕，移除加载动画
+const loadingEl = document.getElementById('app-loading')
+if (loadingEl) {
+  loadingEl.classList.add('fade-out')
+  loadingEl.addEventListener('transitionend', () => loadingEl.remove())
+}
 ```
 
 - `UserrankBadge` 被注册为全局组件，可在任何页面直接使用 `<userrankBadge />` 而不需要单独 import
 - Pinia 使用 Composition API 风格（`defineStore` 第二个参数为函数，而非 Options 对象）
+- 所有资源加载完毕后自动移除加载动画元素（`#app-loading`）
+- 引入 `easterEgg.js` 作为开发者彩蛋
 
 ### App.vue — 根组件
 
@@ -299,9 +356,10 @@ app.mount('#app')       // 挂载到 #app 元素
 
 关键设计点：
 - **NavBar 条件隐藏**：通过 `route.meta.hideNavBar` 控制，如 AdminPanel 页面需要全屏管理界面
-- **过渡动画**：使用 `fade` 动画（`opacity` 0.3s），`mode="out-in"` 保证离开动画完成后才渲染新页面
+- **过渡动画**：使用 `fade` 动画（`opacity` 0.5s），`mode="out-in"` 保证离开动画完成后才渲染新页面
 - **Popup 全局挂载**：`<Popup />` 在 App.vue 根层级渲染，不被任何页面 DOM 结构限制
-- **自定义字体**：在 `<style>` 中通过 `@font-face` 加载 `SmileySans-Oblique.ttf` 和 `MapleMono-CN-Regular.ttf`
+- **自定义字体**：在 `<style>` 中通过 `@font-face` 加载 `font-smiley-sans.ttf`（SmileySans Oblique）和 `font-maple-mono.ttf`（MapleMono CN Regular）
+- **全局 CSS 变量**：定义 `--content-font` 为用户生成内容使用系统字体栈
 
 ---
 
@@ -378,11 +436,11 @@ LoginPage.vue
 src/stores/auth.js
     │  authApi.login()
     ▼
-src/services/api.js
+src/services/api/core.js
     │  fetch('/api/auth/login') → Vite proxy → Express
     ▼
 server/routes/auth.js
-    │  loginLimiter(1min/5次) → getOne('SELECT * FROM users WHERE username=?')
+    │  loginLimiter(1min/5次) → getOne('SELECT * FROM users WHERE username=? OR email=?')
     │  → bcrypt.compare() → generateToken() → jwt.sign()
     ▼
 返回 JSON { token } → persistLoginSession → authStore.currentUser 更新
@@ -394,7 +452,7 @@ server/routes/auth.js
 BrowsePage.vue (onMounted)
     │  postStore.fetchPosts({ category, search })
     ▼
-src/services/api.js
+src/services/api/core.js
     │  GET /api/posts → Vite proxy → Express
     ▼
 server/routes/posts.js
@@ -426,7 +484,7 @@ server/routes/posts.js
 API 请求收到 HTTP 401
     │
     ▼
-api.js → clearLoginSession() + dispatchEvent('auth:unauthorized')
+api/core.js → clearLoginSession() + dispatchEvent('auth:unauthorized')
     │
     ▼
 stores/auth.js 监听 → logout() → currentUser=null → 导航栏切换
@@ -455,7 +513,7 @@ npm run dev
 cd server && npm run dev
 ```
 
-首次启动后端时进入交互式 .env 配置向导：
+首次启动后端时进入交互式 .env 配置向导（`bootstrap/env.js`）：
 1. 管理员密码
 2. JWT 签名密钥
 3. 服务器端口（默认 3001）
@@ -481,15 +539,16 @@ cd server && npm run dev
 
 - **Vue 3 Composition API**：`<script setup>` + `ref`/`computed`/`watch`
 - **Pinia 状态管理**：`defineStore('name', () => { ... })` 工厂函数风格
-- **API 调用**：通过 `api.js` 封装函数发起，不直接调用 `fetch()`
+- **API 调用**：通过 `api/core.js` 封装函数发起，不直接调用 `fetch()`
 - **`auth` 选项三元值**：`true`(必需)、`'optional'`(可选)、`false`/省略(公开)
 - **样式**：`<style scoped>`，全局样式在 App.vue
 - **组件命名**：PascalCase — `RichTextEditor.vue`
-- **自定义字体**：`SmileySans Oblique`（标题）、`MapleMono CN Regular`（等宽）
+- **自定义字体**：`SmileySans Oblique`（标题）、`MapleMono CN Regular`（等宽），font-face 声明于 `App.vue`
 
 ### 后端
 
 - **ESM 模块**：`package.json` 设置 `"type": "module"`
+- **路由自动注册**：`server/index.js` 自动扫描 `routes/` 目录注册路由
 - **路由结构**：`router.use(getDb)` → 定义路由 → `export default router`
 - **参数校验**：开头校验，失败返回 `res.json({ success: false, message })`
 - **错误处理**：`console.error()` + 返回 500
@@ -510,17 +569,18 @@ res.status(500).json({ success: false, message: "服务器内部错误" })
 
 ## 9. 前端服务层参考
 
-### services/api.js — 统一 HTTP 客户端
+### services/api/core.js — 统一 HTTP 客户端
 
 ```js
 async function request(endpoint, options = {}) {
   const { method = 'GET', body, auth = false, params } = options
 
   const headers = { 'Content-Type': 'application/json' }
-  if (auth === true || auth === 'optional') {
+  if (auth) {
     const token = getToken()  // 从 localStorage/sessionStorage 读取
     if (token) headers['Authorization'] = `Bearer ${token}`
   }
+  // auth === 'optional' 时同样尝试携带 token
 
   let url = `/api${endpoint}`
   if (params) { /* URLSearchParams 拼接 */ }
@@ -537,17 +597,17 @@ async function request(endpoint, options = {}) {
 }
 ```
 
-`api.js` 导出 11 组 API 对象 + 2 个辅助函数：
+`api/index.js` 导出 9 组 API 对象 + 2 个辅助函数：
 
 | 导出对象 | 方法数 | 说明 |
 |----------|--------|------|
-| `authApi` | 10 | 注册、登录、用户 CRUD、密码、权限提升 |
-| `postsApi` | 11 | 帖子 CRUD、点赞/取消、评论、分类 |
+| `authApi` | 11 | 注册、登录、用户 CRUD、密码、权限提升、密码验证 |
+| `postsApi` | 12 | 帖子 CRUD、点赞/取消、浏览量递增、评论、分类 |
 | `teamsApi` | 5 | 创建/加入/退出、列表/详情 |
 | `heroesApi` | 3 | 列表/详情、同步 |
 | `notificationsApi` | 5 | 列表、未读数、标记已读 |
 | `announcementsApi` | 4 | 列表/详情、创建/删除 |
-| `adminApi` | 7 | 表 CRUD、SQL、统计 |
+| `adminApi` | 8 | 表 CRUD、SQL、统计、密码重置 |
 | `preferenceApi` | 2 | 偏好记录与获取 |
 | `gitApi` | 1 | Git 仓库信息获取 |
 | `persistLoginSession` | — | 保存会话到存储 |
@@ -555,7 +615,7 @@ async function request(endpoint, options = {}) {
 
 ### services/auth.js — 旧版认证兼容层
 
-项目早期使用 localStorage 的纯前端认证。当前应使用 `stores/auth.js` + `api.js`。此文件提供兼容功能：
+项目早期使用 localStorage 的纯前端认证。当前应使用 `stores/auth.js` + `services/api/`。此文件提供兼容功能：
 - `getAllUsers()` / `saveAllUsers()` — 本地用户存取
 - `registerUser()` / `login()` — 本地登录模拟
 - `getCurrentUser()` / `logout()` — 会话管理
@@ -575,9 +635,9 @@ async function request(endpoint, options = {}) {
 
 排序算法：每个帖子的得分 = Σ (pref[tag] / total) for tag in post.tags，按得分降序排列。
 
-### services/post.js / services/notification.js
+### services/post.js / services/notification.js / services/team.js / services/avatarService.js
 
-帖子辅助服务（格式化、分类）和通知轮询服务。
+帖子辅助服务（格式化、分类）、通知轮询服务、战队辅助服务、头像服务。
 
 ---
 
@@ -587,17 +647,17 @@ async function request(endpoint, options = {}) {
 
 ```js
 export const USERRANK_MAP = {
-  0: { key: 'visitor',    cn: '游客',   icon: '👤', color: '#6c757d' },
-  1: { key: 'player',     cn: '玩家',   icon: '🎮', color: '#4facfe' },
-  2: { key: 'trusted_player', cn: '信任玩家', icon: '⭐', color: '#28a745' },
-  3: { key: 'op',         cn: '管理员', icon: '🛡️', color: '#dc3545' }
+  0: { key: 'visitor',        label: 'Visitor',        cn: '游客',   icon: '👤', color: '#6c757d' },
+  1: { key: 'player',         label: 'Player',         cn: '玩家',   icon: '🎮', color: '#4facfe' },
+  2: { key: 'trusted_player', label: 'Trusted Player', cn: '信任玩家', icon: '⭐', color: '#28a745' },
+  3: { key: 'op',             label: 'OP',             cn: '管理员',  icon: '🛡️', color: '#dc3545' }
 }
 
 export const POSTRANK_MAP = {
-  'FF': { cn: '受警告内容', color: '#dc3545' },
-  '69': { cn: '',           color: '#4facfe' },
-  '78': { cn: '精华内容',   color: '#28a745' },
-  '00': { cn: '封禁内容',   color: '#212529' }
+  'FF': { key: 'red',    label: 'Warned',   cn: '受警告内容', color: '#dc3545', bg: '#fff5f5', border: '#dc3545' },
+  '69': { key: 'blue',   label: 'Normal',   cn: '',           color: '#4facfe', bg: '#f0f8ff', border: '#4facfe' },
+  '78': { key: 'green',  label: 'Featured', cn: '精华内容',   color: '#28a745', bg: '#f0fff4', border: '#28a745' },
+  '00': { key: 'black',  label: 'Banned',   cn: '封禁内容',   color: '#212529', bg: '#f8f9fa', border: '#212529' }
 }
 ```
 
@@ -609,6 +669,21 @@ export const POSTRANK_MAP = {
 | `getPostRankInfo(rank)` | 获取帖子标记 | `getPostRankInfo('FF')` → 红帖 |
 | `canCommentOnPost(u, p)` | 检查评论权限 | `canCommentOnPost(0, 'FF')` → false |
 | `canViewPostContent(u, p)` | 检查查看权限 | `canViewPostContent(1, '00')` → false |
+
+### constants/roles.js
+
+守望先锋职责配置：
+
+```js
+export const ROLE_OPTIONS = [
+  { value: 'flexible', label: '灵活', icon: '🔄' },
+  { value: 'damage',   label: '输出', icon: '💥' },
+  { value: 'support',  label: '支援', icon: '💚' },
+  { value: 'heavy',    label: '重装', icon: '🛡️' }
+]
+```
+
+导出 `validateRoles(roles)` 函数，校验职责选择的有效性。
 
 ### constants/popupStyles.json
 
@@ -649,9 +724,9 @@ pop.up({ title: '提示', style: 'ow' })
 - `<bv>BVxxx</bv>` → Bilibili 嵌入式视频
 - `<git data-*></git>` → Git 仓库信息卡片
 
-### utils/encode.js / utils/auth.js
+### utils/encode.js / utils/auth.js / utils/helpers.js / utils/easterEgg.js
 
-编码工具（HTML 转义、URL 编码、Base64）和前端认证辅助函数。
+编码工具（HTML 转义、URL 编码、Base64）、前端认证辅助函数、通用辅助函数、开发者彩蛋。
 
 ---
 
@@ -669,6 +744,7 @@ pop.up({ title: '提示', style: 'ow' })
 |------|------|
 | `isLoggedIn` | 是否已登录 |
 | `currentUsername` | 当前用户名 |
+| `currentDisplayName` | 当前用户显示名（昵称或用户名） |
 | `currentUid` | 当前用户 UID |
 | `userrank` | 等级（0-3） |
 | `isAdmin` | userrank ≥ 3 |
@@ -679,18 +755,20 @@ pop.up({ title: '提示', style: 'ow' })
 
 | 方法 | 说明 |
 |------|------|
-| `loadSession()` | 从存储加载会话，校验有效期 |
+| `loadSession()` | 从存储加载会话，校验有效期（30 天） |
 | `registerUser(userData)` | 注册 |
 | `login(username, password, rememberMe?)` | 登录 |
 | `logout()` | 登出 |
+| `validatePassword(password)` | 密码校验（长度≥6） |
 | `getAllUsers()` | 获取所有用户 |
 | `getUserById(id)` | 获取单个用户 |
 | `updateUser(userId, updates)` | 更新信息 |
 | `deleteUser(userId)` | 删除账户 |
 | `updateUserRole(userId, roles)` | 更新职责 |
 | `promoteUser(targetUid, newRank)` | 提升等级（仅管理员） |
+| `initTestData()` | 测试数据（由后端管理） |
 
-**自动登出**：监听 `auth:unauthorized` 事件（来自 api.js），自动清除会话。
+**自动登出**：监听 `auth:unauthorized` 事件（来自 api/core.js），自动清除会话。初始化时自动调用 `loadSession()`。
 
 ### popup store — `src/stores/popup.js`
 
@@ -710,11 +788,11 @@ pop.up({ title: '提示', style: 'ow' })
 
 ## 13. 页面组件参考清单
 
-### 一级页面（14 个）
+### 一级页面（15 个）
 
 | 组件 | 路由 | 功能 |
 |------|------|------|
-| `HomePage.vue` | `/` | 首页（4 个子组件） |
+| `HomePage.vue` | `/` | 首页（8 个子组件） |
 | `LoginPage.vue` | `/login` | 登录 |
 | `RegisterPage.vue` | `/register` | 注册 |
 | `BrowsePage.vue` | `/browse` | 帖子浏览 |
@@ -724,18 +802,21 @@ pop.up({ title: '提示', style: 'ow' })
 | `NotificationPage.vue` | `/notifications` | 通知列表 |
 | `AnnouncementPage.vue` | `/announcements` | 公告列表 |
 | `UserPanel.vue` | `/user/:uid` | 用户面板（5 子标签页） |
+| `JoinTeamPage.vue` | `/jointeam` | 加入/创建战队 |
 | `HeroesPage.vue` | `/heroes` | 英雄图鉴 |
 | `AdminPanel.vue` | `/adminpower` | 管理后台 |
 | `GeneratePage.vue` | `/generate` | 数据生成器（管理员） |
 | `ErrorPage.vue` | `/error/:code` | 错误页 |
 
-### 首页子组件
+### 首页子组件（8 个）
 
-`HeroSection.vue` / `RolesSection.vue` / `SupportGallery.vue` / `BlankSection.vue`
+`HeroSection.vue` / `RolesSection.vue` / `RoleGallery.vue` / `roleConfig.js` / `DamageGallery.vue` / `TankGallery.vue` / `SupportGallery.vue` / `BlankSection.vue`
 
-### 用户面板子组件
+### 用户面板子组件及弹窗
 
-`ProfileHeader.vue` / `OverviewTab.vue` / `PostsTab.vue` / `TeamTab.vue` / `SettingsTab.vue` / `modals/`
+`ProfileHeader.vue` / `OverviewTab.vue` / `PostsTab.vue` / `TeamTab.vue` / `SettingsTab.vue`
+
+弹窗（小写连字符）：`modal-change-password.vue` / `modal-change-role.vue` / `modal-delete-account.vue` / `modal-team-create.vue` / `modal-team-join.vue` / `modal-team-leave.vue`
 
 ---
 
@@ -776,9 +857,13 @@ pop.toast('操作成功', 'success')
 
 ## 15. 后端工具文件说明
 
+### bootstrap/env.js
+
+环境变量自动引导模块，检查 `.env` 文件是否存在，不存在则自动调用 `setup-env.js` 交互式引导。
+
 ### setup-env.js
 
-交互式 .env 配置引导，首次启动且 `.env` 不存在时自动运行：
+交互式 .env 配置引导，首次启动时运行：
 1. 显示 ASCII Banner
 2. 输入 ADMIN_PASSWORD、JWT_SECRET（可自动生成）、PORT、CORS_ORIGINS
 3. 生成 `.env` 并打印配置摘要
@@ -791,13 +876,21 @@ Supabase → SQLite 数据迁移。
 
 数据库文件诊断脚本。
 
-### tools/migrate-localstorage.js
+### utils/identifiers.js
 
-浏览器 localStorage 数据迁移到 SQLite。
+UID/PID 生成器。
 
-### tools/seed-data.json / tools/generate-seed.js / tools/append-seed.js
+### utils/validators.js
 
-种子数据工具集，用于开发/测试环境的数据初始化。通过管理员页面 `/generate` 或 API `POST /api/seed/inject` 注入。
+输入校验函数（用户名、邮箱、密码、职责）。
+
+### utils/banner.js
+
+ASCII Banner 输出函数。
+
+### scripts/optimize-assets.cjs
+
+资源优化脚本。
 
 ---
 
@@ -809,7 +902,7 @@ Supabase → SQLite 数据迁移。
    { path: '/new-page', component: () => import('../pages/NewPage.vue'),
      meta: { requiresAuth: true } }
    ```
-3. **添加 API 调用**：在 `src/services/api.js` 中添加方法
+3. **添加 API 调用**：在 `src/services/api/` 中添加子模块文件（自动被 `api/index.js` 引用）
 4. **添加 Pinia Store（可选）**：在 `src/stores/` 下创建
 
 路由 meta 选项：`requiresAuth`、`requiresAdmin`、`hideNavBar`、`targetSection`
@@ -818,14 +911,13 @@ Supabase → SQLite 数据迁移。
 
 ## 17. 如何添加新 API 端点
 
-1. **创建路由文件**：`server/routes/new-feature.js`
-2. **注册入口**：`server/index.js` 中 `app.use('/api/new-feature', router)`
-3. **选择认证中间件**：
+1. **创建路由文件**：`server/routes/new-feature.js`（自动扫描注册到 `/api/new-feature`）
+2. **选择认证中间件**：
    - 无中间件 — 公开
    - `authMiddleware` — 需登录
    - `adminMiddleware` — 需管理员
    - `optionalAuth` — 可选认证
-4. **添加频率限制（可选）**：`rateLimit({ windowMs, max })`
+3. **添加频率限制（可选）**：`rateLimit({ windowMs, max })`
 
 ---
 
@@ -845,15 +937,3 @@ git checkout -b feature/my-feature
 # 开发后合并
 git checkout dev && git merge feature/my-feature
 git checkout main && git merge dev
-```
-
----
-
-## 19. 缺失资源说明
-
-仓库没有包含 `Amiya.mp4` 和 `Amiya2.mp4`（文件过大）。如需使用：
-- 从 GitHub Pages 下载
-- 使用自有视频替换
-- 移除相关引用
-
-首次编译因缺失这两个文件会报错。

@@ -8,6 +8,10 @@
 
 所有 API 端点以 `/api` 为前缀，例如完整的请求 URL 为 `http://localhost:3001/api/auth/login`。
 
+### 路由自动注册
+
+后端 `server/index.js` 会自动扫描 `server/routes/` 目录下的所有 `.js` 文件，并按文件名将路由挂载到对应的 `/api/{文件名}` 路径。例如 `auth.js` → `/api/auth`，`posts.js` → `/api/posts`。
+
 ### 认证方式
 
 在请求头中携带 JWT token：
@@ -16,7 +20,10 @@
 Authorization: Bearer <token>
 ```
 
-前端 `api.js` 的 request() 函数会自动完成 token 的读取和注入。
+前端 `src/services/api/core.js` 的 `request()` 函数会自动完成 token 的读取和注入。认证选项支持三个值：
+- `true` — 必需认证，无 token 时仍发送请求但无 Authorization 头
+- `'optional'` — 可选认证，有 token 则携带，无 token 则静默跳过
+- `false` 或省略 — 公开接口，不携带 token
 
 ### 响应格式
 
@@ -75,11 +82,13 @@ POST /api/auth/register
     "id": 5,
     "uid": "u-20260607-2841",
     "username": "玩家小明",
+    "nickname": null,
+    "displayName": "玩家小明",
     "email": "player@example.com",
     "role": ["flexible"],
     "userrank": 0,
     "isAdmin": false,
-    "avatar": "/Head.png",
+    "avatar": "/default-avatar.png",
     "teamId": null,
     "createdAt": "2026-06-07 00:00:00",
     "updatedAt": "2026-06-07 00:00:00",
@@ -121,7 +130,7 @@ POST /api/auth/login
 
 `username` 字段支持用户名或邮箱两种方式登录。`rememberMe` 控制 token 存储位置（localStorage vs sessionStorage）。
 
-**成功响应**（与注册响应结构相同）：
+**成功响应**（与注册响应结构相同，包含 `nickname`、`displayName` 字段）：
 
 ```json
 {
@@ -130,8 +139,11 @@ POST /api/auth/login
     "id": 1,
     "uid": "u-20260101-0000",
     "username": "Admin",
+    "nickname": null,
+    "displayName": "Admin",
     "userrank": 3,
     "isAdmin": true,
+    "avatar": "/default-avatar.png",
     "token": "eyJhbGciOiJIUzI1NiIs..."
   }
 }
@@ -154,11 +166,13 @@ GET /api/auth/me
     "id": 1,
     "uid": "u-20260101-0000",
     "username": "Admin",
+    "nickname": null,
+    "displayName": "Admin",
     "email": "admin@omaekumiko.com",
     "role": ["flexible"],
     "userrank": 3,
     "isAdmin": true,
-    "avatar": "/Head.png",
+    "avatar": "/default-avatar.png",
     "teamId": null,
     "createdAt": "2026-01-01 00:00:00",
     "updatedAt": "2026-06-07 00:00:00"
@@ -173,9 +187,9 @@ GET /api/auth/users
 ```
 
 **认证**：无  
-**说明**：返回所有用户列表，邮箱做脱敏处理（仅显示前两位字符）
+**说明**：返回所有用户列表，邮箱做脱敏处理（仅显示前两位字符，后跟 `***`）
 
-**成功响应**：
+**成功响应**（新增 `nickname`、`displayName` 字段）：
 
 ```json
 {
@@ -185,11 +199,13 @@ GET /api/auth/users
       "id": 1,
       "uid": "u-20260101-0000",
       "username": "Admin",
+      "nickname": null,
+      "displayName": "Admin",
       "email": "ad***@omaekumiko.com",
       "role": ["flexible"],
       "userrank": 3,
       "isAdmin": true,
-      "avatar": "/Head.png",
+      "avatar": "/default-avatar.png",
       "teamId": null,
       "createdAt": "2026-01-01 00:00:00",
       "updatedAt": "2026-06-07 00:00:00"
@@ -207,7 +223,7 @@ GET /api/auth/users/:uid
 **认证**：无  
 **说明**：支持 UID 字符串（如 `u-20260101-0000`）或数字 ID（如 `1`）两种查询方式
 
-**成功响应**（邮箱已脱敏）：
+**成功响应**（邮箱已脱敏，包含 `nickname`、`displayName`）：
 
 ```json
 {
@@ -216,11 +232,13 @@ GET /api/auth/users/:uid
     "id": 1,
     "uid": "u-20260101-0000",
     "username": "Admin",
+    "nickname": null,
+    "displayName": "Admin",
     "email": "ad***@omaekumiko.com",
     "role": ["flexible"],
     "userrank": 3,
     "isAdmin": true,
-    "avatar": "/Head.png",
+    "avatar": "/default-avatar.png",
     "teamId": null,
     "createdAt": "2026-01-01 00:00:00",
     "updatedAt": "2026-06-07 00:00:00"
@@ -235,14 +253,15 @@ PUT /api/auth/update
 ```
 
 **认证**：必需  
-**说明**：可更新的字段为 `email`、`avatar`、`username`，其他字段将被忽略
+**说明**：可更新的字段为 `email`、`avatar`、`username`、`nickname`，其他字段将被忽略
 
 **请求体**：
 
 ```json
 {
   "email": "newemail@example.com",
-  "username": "新用户名"
+  "username": "新用户名",
+  "nickname": "昵称"
 }
 ```
 
@@ -255,6 +274,8 @@ PUT /api/auth/update
     "id": 5,
     "uid": "u-20260607-2841",
     "username": "新用户名",
+    "nickname": "昵称",
+    "displayName": "昵称",
     "email": "newemail@example.com"
   }
 }
@@ -350,7 +371,41 @@ PUT /api/auth/password
 }
 ```
 
-### 1.10 删除当前用户
+### 1.10 验证密码（密码确认）
+
+```
+POST /api/auth/verify-password
+```
+
+**认证**：必需  
+**说明**：用于注销账户等场景的密码确认，仅验证密码是否正确，不修改密码。
+
+**请求体**：
+
+```json
+{
+  "password": "mypassword123"
+}
+```
+
+**成功响应**：
+
+```json
+{
+  "success": true
+}
+```
+
+**失败响应**（密码错误）：
+
+```json
+{
+  "success": false,
+  "message": "密码错误"
+}
+```
+
+### 1.11 删除当前用户
 
 ```
 DELETE /api/auth/delete
@@ -625,7 +680,24 @@ DELETE /api/posts/:pid/like
 }
 ```
 
-### 2.11 添加评论
+### 2.11 递增浏览量
+
+```
+POST /api/posts/:pid/views
+```
+
+**认证**：无  
+**说明**：递增帖子浏览量计数器，通常在帖子详情页加载时调用。
+
+**成功响应**：
+
+```json
+{
+  "success": true
+}
+```
+
+### 2.12 添加评论
 
 ```
 POST /api/posts/:pid/comment
@@ -882,7 +954,7 @@ GET /api/admin/tables
 ```
 
 **认证**：必需（管理员）  
-**说明**：返回所有业务表的名称、列结构和行数统计
+**说明**：返回 8 张业务表的名称、列结构和行数统计
 
 ### 7.2 查看表数据
 
@@ -902,7 +974,7 @@ GET /api/admin/table/:tableName
 | `sortBy` | string | id | 排序列 |
 | `sortOrder` | string | DESC | 排序方向（asc/desc） |
 
-**说明**：`password_hash` 字段自动脱敏。仅允许操作白名单中的 9 张表（含 `ow_heroes`）。
+**说明**：`password_hash` 字段自动脱敏。仅允许操作白名单中的 8 张表（含 `ow_heroes`）。
 
 ### 7.3 插入行
 
@@ -970,6 +1042,32 @@ GET /api/admin/stats
     "ow_heroes": 42,
     "adminUsers": 2
   }
+}
+```
+
+### 7.8 管理员重置用户密码
+
+```
+PUT /api/admin/users/:id/reset-password
+```
+
+**认证**：必需（管理员）  
+**说明**：管理员可直接重置任意用户的密码，无需旧密码验证。
+
+**请求体**：
+
+```json
+{
+  "newPassword": "newpassword123"
+}
+```
+
+**成功响应**：
+
+```json
+{
+  "success": true,
+  "message": "用户 Admin 的密码已重置"
 }
 ```
 
@@ -1127,7 +1225,7 @@ POST /api/seed/inject
 ```
 
 **认证**：必需（管理员，userrank ≥ 3）  
-**说明**：从 `tools/seed-data.json` 文件中读取预定义的测试用户和帖子数据，一键注入数据库。用于开发、测试和演示环境的数据初始化。
+**说明**：从 `public/seed-data.json` 文件中读取预定义的测试用户和帖子数据，一键注入数据库。用于开发、测试和演示环境的数据初始化。
 
 **成功响应**：
 
@@ -1151,16 +1249,16 @@ POST /api/seed/inject
 
 ## 12. 路由挂载概览
 
-所有 API 路由在 `server/index.js` 中统一挂载：
+所有 API 路由通过 `server/index.js` 自动扫描注册，根据文件名自动挂载到 `/api/{文件名}` 路径：
 
 | 路径前缀 | 源文件 | 端点数量 | 说明 |
 |----------|--------|----------|------|
-| `/api/auth` | `routes/auth.js` | 10 | 认证与用户管理 |
-| `/api/posts` | `routes/posts.js` | 11 | 帖子 CRUD |
+| `/api/auth` | `routes/auth.js` | 11 | 认证与用户管理（含 `verify-password`） |
+| `/api/posts` | `routes/posts.js` | 12 | 帖子 CRUD（含 `views` 递增） |
 | `/api/teams` | `routes/teams.js` | 5 | 战队管理 |
 | `/api/notifications` | `routes/notifications.js` | 5 | 通知管理 |
 | `/api/announcements` | `routes/announcements.js` | 4 | 公告管理 |
-| `/api/admin` | `routes/admin.js` | 7 | 管理后台 |
+| `/api/admin` | `routes/admin.js` | 8 | 管理后台（含 `reset-password`） |
 | `/api/heroes` | `routes/heroes.js` | 3 | 英雄图鉴 |
 | `/api/migrate` | `routes/migrate.js` | 1 | 数据迁移 |
 | `/api/preference` | `routes/preference.js` | 2 | 个性化偏好 |
