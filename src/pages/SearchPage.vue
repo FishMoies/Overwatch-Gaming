@@ -122,26 +122,39 @@ const performSearch = async () => {
   if (!searchQuery.value.trim()) return
   loading.value = true
   updateUrl()
-  const q = searchQuery.value.toLowerCase().trim()
+  const q = searchQuery.value.trim()
   try {
     if (activeTab.value === 'posts') {
-      const allPosts = await postService.getAllPosts()
-      posts.value = allPosts.filter(p => (p.parentId === null || p.parentId === undefined) && (
-        (p.pid && p.pid.toLowerCase().includes(q)) ||
-        (p.title && p.title.toLowerCase().includes(q)) ||
-        (p.username && p.username.toLowerCase().includes(q)) ||
-        (p.content && p.content.toLowerCase().includes(q))
-      )).map(p => ({
-        id: p.id, pid: p.pid, title: p.title, content: p.content,
-        author: p.displayName || p.username,
-        date: new Date(p.createdAt).toLocaleDateString('zh-CN'),
-        rankInfo: { icon: ({ 'FF': '🔴', '69': '🔵', '78': '🟢', '00': '⚫' })[p.postrank] || '🔵' }
+      // 使用后端搜索 API（支持 search 参数，服务端过滤）
+      const searchResults = await postService.searchPosts(query)
+      posts.value = searchResults.filter(post => {
+        return post.parentId === null || post.parentId === undefined
+      }).map(post => ({
+        id: post.id,
+        pid: post.pid,
+        title: post.title,
+        content: post.content,
+        author: post.displayName || post.username,
+        date: new Date(post.createdAt).toLocaleDateString('zh-CN'),
+        rankInfo: { icon: getPostRankIcon(post.postrank) }
       }))
     } else {
+      // 使用后端搜索 API 搜索用户
       const res = await authApi.getAllUsers()
       const allUsers = res.success ? res.users : []
-      users.value = allUsers.filter(u => (u.uid && u.uid.toLowerCase().includes(q)) || u.username.toLowerCase().includes(q) || (u.email && u.email.toLowerCase().includes(q)))
-        .map(u => ({ id: u.id, uid: u.uid, name: u.username, bio: '守望先锋玩家' }))
+      const lowerQuery = query.toLowerCase()
+      users.value = allUsers.filter(user => {
+        return (
+          (user.uid && user.uid.toLowerCase().includes(lowerQuery)) ||
+          user.username.toLowerCase().includes(lowerQuery) ||
+          (user.email && user.email.toLowerCase().includes(lowerQuery))
+        )
+      }).map(user => ({
+        id: user.id,
+        uid: user.uid,
+        name: user.username,
+        bio: '守望先锋玩家'
+      }))
     }
   } catch { posts.value = []; users.value = [] }
   finally { loading.value = false }
