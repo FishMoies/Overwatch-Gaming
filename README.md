@@ -28,18 +28,18 @@
 Overwatch-Gaming/
 ├── public/                    # 静态资源
 │   ├── favicon.ico            # 网站图标
-│   ├── 96px-职责：输出_图标.webp
-│   ├── 96px-职责：支援_图标.webp
-│   ├── 96px-职责：重装_图标.webp
-│   ├── Head.png
-│   ├── Heading.png
-│   ├── ow_icon.svg
-│   ├── SmileySans-Oblique.ttf
-│   ├── MapleMono-CN-Regular.ttf
-│   ├── 默认头图设计.psd
-│   ├── 职责专题页面参考.psd
-│   ├── migrate.html
-│   └── Nsc/
+│   ├── logo.svg               # 网站 Logo
+│   ├── default-avatar.png     # 默认头像（PNG）
+│   ├── default-avatar.webp    # 默认头像（WebP）
+│   ├── font-maple-mono.ttf    # Maple Mono 等宽字体
+│   ├── font-smiley-sans.ttf   # Smiley Sans 字体
+│   ├── role-icon-damage.webp  # 输出职责图标
+│   ├── role-icon-support.webp # 支援职责图标
+│   ├── role-icon-tank.webp    # 重装职责图标
+│   ├── seed-data.json         # 种子数据定义
+│   ├── damage/                # 输出位英雄图片
+│   ├── support/               # 支援位英雄图片
+│   └── tank/                  # 重装位英雄图片
 ├── src/                       # 前端源代码
 │   ├── App.vue                # 根组件
 │   ├── main.js                # 应用入口
@@ -52,7 +52,10 @@ Overwatch-Gaming/
 │   │   ├── Popup.vue
 │   │   ├── MentionExtension.js
 │   │   ├── BilibiliNode.js
-│   │   └── GitNode.js         # Git 仓库嵌入 TipTap 节点
+│   │   ├── GitNode.js         # Git 仓库嵌入 TipTap 节点
+│   │   ├── EmptyState.vue     # 空状态占位
+│   │   ├── ErrorState.vue     # 错误状态展示
+│   │   └── LoadingSkeleton.vue# 骨架屏加载
 │   ├── pages/                 # 页面级组件
 │   │   ├── HomePage.vue
 │   │   ├── LoginPage.vue
@@ -70,35 +73,53 @@ Overwatch-Gaming/
 │   │   ├── ErrorPage.vue
 │   │   └── HomePages/
 │   │       ├── HeroSection.vue
-│   │       ├── RolesSection.vue
+│   │       ├── RoleGallery.vue
+│   │       ├── roleConfig.js
+│   │       ├── DamageGallery.vue
+│   │       ├── TankGallery.vue
 │   │       ├── SupportGallery.vue
+│   │       ├── RolesSection.vue
 │   │       └── BlankSection.vue
-│   ├── UserPanel/
+│   ├── pages/UserPanel/       # 用户面板组件
 │   │   ├── ProfileHeader.vue
 │   │   ├── OverviewTab.vue
 │   │   ├── PostsTab.vue
 │   │   ├── TeamTab.vue
 │   │   ├── SettingsTab.vue
 │   │   └── modals/
+│   │       ├── ModalChangePassword.vue
+│   │       ├── ModalChangeRole.vue
+│   │       ├── ModalDeleteAccount.vue
+│   │       ├── ModalTeamCreate.vue
+│   │       ├── ModalTeamJoin.vue
+│   │       └── ModalTeamLeave.vue
 │   ├── services/              # API 调用封装
-│   │   ├── api.js             # 11 组 API 封装
+│   │   ├── api.js             # API 入口
+│   │   ├── api/               # 按模块拆分的 API 封装
 │   │   ├── auth.js
 │   │   ├── post.js
 │   │   ├── user.js
+│   │   ├── team.js
 │   │   ├── preference.js      # 偏好记录与排序服务
-│   │   └── notification.js
+│   │   ├── notification.js
+│   │   └── avatarService.js   # 头像处理服务
 │   ├── stores/                # Pinia 状态仓库
 │   │   ├── auth.js
 │   │   ├── post.js
 │   │   ├── team.js
 │   │   ├── popup.js
-│   │   └── notification.js
+│   │   ├── notification.js
+│   │   └── theme.js           # 主题状态管理
+│   ├── styles/
+│   │   └── variables.css      # CSS 变量与主题定义
 │   ├── utils/
 │   │   ├── auth.js
 │   │   ├── encode.js
 │   │   ├── mentionParser.js
 │   │   ├── contentFilter.js   # 内容过滤器（BV/Git 标签渲染）
-│   │   └── pop.js
+│   │   ├── pop.js
+│   │   ├── easterEgg.js       # 彩蛋功能
+│   │   └── helpers.js         # 通用工具函数
 │   ├── constants/
 │   │   ├── rankMap.js
 │   │   └── popupStyles.json
@@ -124,18 +145,16 @@ Overwatch-Gaming/
 │   │   ├── preference.js      # 个性化偏好
 │   │   ├── seed.js            # 种子数据注入
 │   │   └── git.js             # Git 仓库信息
+│   ├── bootstrap/             # 启动脚本
+│   ├── middleware/             # 中间件
 │   └── utils/identifiers.js
-├── tools/
-│   ├── migrate-localstorage.js
-│   ├── seed-data.json         # 种子数据定义
-│   ├── generate-seed.js
-│   └── append-seed.js
+├── scripts/
+│   └── optimize-assets.cjs    # 资源优化脚本
 ├── vite.config.js
 ├── index.html
 ├── package.json
 ├── jsconfig.json
-├── test_auth.html
-└── test_admin_login.js
+└── LICENSE
 ```
 
 ## 前后端 API 通信架构
@@ -406,7 +425,7 @@ Popup.vue 组件配合 popup.js 工具和 popupStyles.json 样式配置，提供
 
 ## Git 分支
 
-项目共维护了六个本地分支和四个远程分支。`main`与`fmy-dev`分支是稳定版本，拥有完整的提交历史。`dev` 分支汇合了正在开发的功能。`test` 与 `lyd-dev` 分支存放实验性设计（例如角色展示页面和 Pinia 重构尝试），这些分支可能存在未完成的 Bug。
+项目主要维护了四个本地分支：`main` 与 `fmy-dev`（当前活跃开发分支）是稳定版本，拥有完整的提交历史；`dev` 分支汇合了正在开发的功能；`lyd-dev` 分支存放实验性设计，可能存在未完成的 Bug。远程仓库还包含 `test` 与 `lyd-dev-test` 等实验分支，用于可 Pinia 重构等探索性尝试。
 
 ## 安装与运行
 

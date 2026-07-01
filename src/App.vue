@@ -1,12 +1,31 @@
 <script setup>
 // 导入Vue Composition API
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import NavBar from './components/NavBar.vue'
 import Popup from './components/Popup.vue'
 
 const route = useRoute()
 const hideNavBar = computed(() => route.meta && route.meta.hideNavBar)
+
+// ── Scroll-to-top button ──
+const showScrollTop = ref(false)
+let scrollHandler = null
+
+onMounted(() => {
+  scrollHandler = () => {
+    showScrollTop.value = window.scrollY > 400
+  }
+  window.addEventListener('scroll', scrollHandler, { passive: true })
+})
+
+onUnmounted(() => {
+  if (scrollHandler) window.removeEventListener('scroll', scrollHandler)
+})
+
+function scrollToTop () {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 </script>
 
 <template>
@@ -23,47 +42,89 @@ const hideNavBar = computed(() => route.meta && route.meta.hideNavBar)
         <component :is="Component" />
       </Transition>
     </router-view>
+
+    <!-- 回到顶部按钮 -->
+    <Transition name="scroll-fade">
+      <button
+        v-if="showScrollTop"
+        class="scroll-top-btn"
+        @click="scrollToTop"
+        aria-label="回到顶部"
+        title="回到顶部"
+      >
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 16V4M10 4l-5 5M10 4l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </Transition>
   </div>
   <!-- 全局弹窗组件 -->
   <Popup />
 </template>
 
 <style scoped>
-/* 自定义字体声明：导入SmileySans Oblique字体 */
-@font-face {
-  font-family: 'SmileySans Oblique';
-  src: url('/font-smiley-sans.ttf') format('truetype');
-}
-
-/* 自定义字体声明：导入MapleMono CN等宽字体 */
-@font-face {
-  font-family: 'MapleMono CN Regular';
-  src: url('/font-maple-mono.ttf') format('truetype');
-}
+/* ── @font-face moved to src/styles/variables.css ── */
 
 /* 应用根容器样式 */
-.app-container{
-  width:100%;          /* 宽度占满父容器 */
-  height:100vh;        /* 高度占满视口高度 */
-  position:relative;   /* 相对定位，为子元素定位提供参考 */
+.app-container {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
 }
 
 /* 页面切换过渡动画样式 */
-/* 进入和离开时的活动状态 */
 .fade-enter-active,
-.fade-leave-active{
-  transition:opacity .5s;  /* 透明度过渡效果，持续0.5秒 */
+.fade-leave-active {
+  transition: opacity var(--duration-normal) var(--easing-in-out);
 }
 
-/* 进入开始状态和离开结束状态 */
 .fade-enter-from,
-.fade-leave-to{
-  opacity:0;  /* 完全透明 */
+.fade-leave-to {
+  opacity: 0;
 }
 
+/* 回到顶部按钮 */
+.scroll-top-btn {
+  position: fixed;
+  bottom: var(--space-xl);
+  right: var(--space-xl);
+  z-index: var(--z-navbar);
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--duration-fast) var(--easing-out);
+  backdrop-filter: blur(8px);
+  background: var(--glass-bg);
+}
+
+.scroll-top-btn:hover {
+  color: var(--color-brand);
+  border-color: var(--color-brand);
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-2px);
+}
+
+.scroll-fade-enter-active,
+.scroll-fade-leave-active {
+  transition: opacity var(--duration-normal) var(--easing-out), transform var(--duration-normal) var(--easing-out);
+}
+
+.scroll-fade-enter-from,
+.scroll-fade-leave-to {
+  opacity: 0;
+  transform: translateY(16px);
+}
 </style>
 
-<!-- 全局 CSS 变量：在非 scoped 的 style 块中定义，确保子组件能通过 var() 访问 -->
+<!-- 全局 CSS 变量 -->
 <style>
 :root {
   /* 用户生成内容区域使用系统字体栈，避免子集化字体缺失字符导致多字体混杂 */

@@ -191,7 +191,7 @@ onMounted(() => {
 }
 
 .subtitle {
-  font-family: 'SmileySans Oblique', sans-serif;
+  font-family: var(--font-mono);
   font-size: clamp(0.875rem, 1vw, 1.2rem);
   color: rgba(255, 255, 255, 0.75);
   margin-top: 1.5vh;

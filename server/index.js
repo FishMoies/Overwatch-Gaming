@@ -10,7 +10,7 @@ import { getDb } from './db.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-// 加载环境变量（首次运行自动引导创建 .env）
+//加载环境变量
 await ensureEnv()
 
 const app = express()
@@ -32,7 +32,7 @@ app.use(cors({
 // 全局速率限制
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15分钟
-  max: 1000, // 每个IP最多1000个请求
+  max: 1000, //每个IP最多1000个请求
   message: { success: false, message: '请求过于频繁，请稍后再试' },
   standardHeaders: true,
   legacyHeaders: false
