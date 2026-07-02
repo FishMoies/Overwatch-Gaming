@@ -54,95 +54,12 @@ async function convertPngToWebp() {
 }
 
 // ============================================================
-// Part 2: Font subsetting (fontmin)
+// Part 2: Font subsetting (REMOVED — use full fonts instead)
 // ============================================================
+// Font subsetting has been removed. The project now uses full
+// font files to ensure all characters are properly displayed.
 async function subsetFonts() {
-  console.log('\n🔤  Subsetting fonts...');
-
-  // Scan all source files for used characters
-  const srcDir = path.resolve(__dirname, '../src');
-  let allText = '';
-
-  function collectText(dir) {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory() && !entry.name.startsWith('.')) {
-        collectText(fullPath);
-      } else if (entry.isFile() && /\.(vue|js|ts|css)$/i.test(entry.name)) {
-        allText += fs.readFileSync(fullPath, 'utf-8');
-      }
-    }
-  }
-
-  collectText(srcDir);
-  
-  // Also scan index.html for used text
-  const indexPath = path.resolve(__dirname, '../index.html');
-  if (fs.existsSync(indexPath)) {
-    allText += fs.readFileSync(indexPath, 'utf-8');
-  }
-
-  // Extract unique characters
-  const uniqueChars = [...new Set(allText)].filter(c => c.charCodeAt(0) >= 32).join('');
-  
-  // Additional commonly used Chinese punctuation & characters
-  const extraChars = '，。、；：？！“”‘’（）【】《》—…·～　ｆｈｔｍｘｓｐｖ';
-  const combinedText = uniqueChars + extraChars;
-
-  const fontFiles = [
-    { src: 'font-maple-mono.ttf', dest: 'font-maple-mono.ttf' },
-    { src: 'font-smiley-sans.ttf', dest: 'font-smiley-sans.ttf' },
-  ];
-
-  for (const font of fontFiles) {
-    const srcFont = path.join(PUBLIC_DIR, font.src);
-    
-    if (!fs.existsSync(srcFont)) {
-      console.warn(`  ⚠️  Font not found: ${font.src}`);
-      continue;
-    }
-
-    const inputStat = fs.statSync(srcFont);
-    const inputSizeMB = (inputStat.size / (1024 * 1024)).toFixed(2);
-
-    // backup the original
-    const backupPath = path.join(PUBLIC_DIR, font.src.replace('.ttf', '-original.ttf'));
-    if (!fs.existsSync(backupPath)) {
-      fs.copyFileSync(srcFont, backupPath);
-      console.log(`  📦 Backup: ${font.src} → ${font.src.replace('.ttf', '-original.ttf')}`);
-    }
-
-    try {
-      const fontmin = new Fontmin()
-        .src(srcFont)
-        .use(Fontmin.glyph({
-          text: combinedText,
-          hinting: false
-        }))
-        .dest(path.dirname(srcFont));
-
-      await new Promise((resolve, reject) => {
-        fontmin.run((err, files) => {
-          if (err) reject(err);
-          else resolve(files);
-        });
-      });
-
-      const outputStat = fs.statSync(srcFont);
-      const outputSizeMB = (outputStat.size / (1024 * 1024)).toFixed(2);
-      const ratio = ((1 - outputStat.size / inputStat.size) * 100).toFixed(0);
-
-      console.log(`  ✅ ${font.src}: ${inputSizeMB}MB → ${outputSizeMB}MB (${ratio}% smaller)`);
-    } catch (err) {
-      console.error(`  ❌ Failed to subset ${font.src}: ${err.message}`);
-      // restore from backup
-      if (fs.existsSync(backupPath)) {
-        fs.copyFileSync(backupPath, srcFont);
-        console.log(`  ↩️  Restored original: ${font.src}`);
-      }
-    }
-  }
+  console.log('🔤  Font subsetting is disabled — using full fonts.');
 }
 
 // ============================================================

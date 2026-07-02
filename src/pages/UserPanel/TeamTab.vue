@@ -137,11 +137,11 @@ function onAvatarError(e) {
 }
 
 .team-card, .no-team-card {
-  background: #1a1a2e;
+  background: var(--color-surface);
   border-radius: 14px;
   padding: 28px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  border: 1px solid #2a2a4a;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
 }
 
 .team-header {
@@ -150,7 +150,7 @@ function onAvatarError(e) {
   align-items: flex-start;
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 2px solid #4facfe;
+  border-bottom: 2px solid var(--color-text-link);
 }
 
 .team-name-section {
@@ -162,13 +162,13 @@ function onAvatarError(e) {
 .team-name {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #4facfe;
+  color: var(--color-text-link);
   margin: 0;
 }
 
 .team-id {
   font-size: 0.85rem;
-  color: #a0aec0;
+  color: var(--color-text-secondary);
 }
 
 .team-stats {
@@ -184,18 +184,18 @@ function onAvatarError(e) {
   display: block;
   font-size: 1.1rem;
   font-weight: 600;
-  color: #4facfe;
+  color: var(--color-text-link);
 }
 
 .team-stat-label {
   font-size: 0.8rem;
-  color: #a0aec0;
+  color: var(--color-text-secondary);
 }
 
 .section-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--color-text-primary);
   margin-bottom: 16px;
 }
 
@@ -206,8 +206,8 @@ function onAvatarError(e) {
 }
 
 .member-card {
-  background: #252545;
-  border: 1px solid #2a2a4a;
+  background: var(--color-surface-hover);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 18px 14px;
   text-align: center;
@@ -217,8 +217,8 @@ function onAvatarError(e) {
 
 .member-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-  border-color: #4facfe;
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-text-link);
 }
 
 .member-avatar img {
@@ -227,18 +227,18 @@ function onAvatarError(e) {
   border-radius: 50%;
   object-fit: cover;
   margin-bottom: 10px;
-  background: #353739;
+  background: var(--color-surface-active);
   border: 2px solid transparent;
   transition: border-color 0.3s;
 }
 
 .member-card:hover .member-avatar img {
-  border-color: #4facfe;
+  border-color: var(--color-text-link);
 }
 
 .member-name {
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--color-text-primary);
   font-size: 0.95rem;
   margin-bottom: 4px;
 }
@@ -256,13 +256,13 @@ function onAvatarError(e) {
 }
 
 .badge.creator {
-  background: #252545;
-  color: #4facfe;
+  background: var(--color-surface-hover);
+  color: var(--color-text-link);
 }
 
 .badge.self {
-  background: #0a3a0a;
-  color: #22c55e;
+  background: var(--color-success-bg);
+  color: var(--color-success);
 }
 
 .member-roles {
@@ -283,10 +283,10 @@ function onAvatarError(e) {
   display: inline-block;
 }
 
-.role-heavy { background: rgba(255,193,7,0.15); color: #ffc107; border: 1px solid #ffc107; }
-.role-damage { background: rgba(220,53,69,0.15); color: #ef4444; border: 1px solid #ef4444; }
-.role-support { background: rgba(40,167,69,0.15); color: #22c55e; border: 1px solid #22c55e; }
-.role-flexible { background: rgba(108,117,125,0.15); color: #a0aec0; border: 1px solid #6c757d; }
+.role-heavy { background: var(--color-warning-bg); color: var(--color-warning); border: 1px solid var(--color-warning); }
+.role-damage { background: var(--color-error-bg); color: var(--color-error); border: 1px solid var(--color-error); }
+.role-support { background: var(--color-success-bg); color: var(--color-success); border: 1px solid var(--color-success); }
+.role-flexible { background: rgba(108,117,125,0.15); color: var(--color-text-secondary); border: 1px solid var(--color-text-tertiary); }
 
 .flexible-icons-row {
   display: flex;
@@ -303,13 +303,13 @@ function onAvatarError(e) {
 
 .role-label {
   font-size: 0.8rem;
-  color: #a0aec0;
+  color: var(--color-text-secondary);
 }
 
 .team-actions {
   margin-top: 24px;
   padding-top: 16px;
-  border-top: 1px solid #2a2a4a;
+  border-top: 1px solid var(--color-border);
   display: flex;
   justify-content: flex-end;
 }
@@ -332,14 +332,14 @@ function onAvatarError(e) {
 }
 
 .leave-btn {
-  background: rgba(220,53,69,0.15);
-  border: 2px solid #ef4444;
-  color: #ef4444;
+  background: var(--color-error-bg);
+  border: 2px solid var(--color-error);
+  color: var(--color-error);
 }
 
 .leave-btn:hover {
-  background: #ef4444;
-  color: white;
+  background: var(--color-error);
+  color: var(--color-text-inverse);
 }
 
 .no-team-card {
@@ -354,7 +354,7 @@ function onAvatarError(e) {
 
 .no-team-text {
   font-size: 1.2rem;
-  color: #a0aec0;
+  color: var(--color-text-secondary);
   margin-bottom: 24px;
 }
 
@@ -365,23 +365,23 @@ function onAvatarError(e) {
 }
 
 .primary-btn {
-  background: linear-gradient(135deg, #4facfe, #667eea);
-  color: #ffffff;
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
 }
 
 .primary-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(79,172,254,0.3);
+  box-shadow: 0 6px 16px var(--color-brand-bg);
 }
 
 .outline-btn {
-  background: rgba(79,172,254,0.1);
-  border: 2px solid #4facfe;
-  color: #4facfe;
+  background: var(--color-info-bg);
+  border: 2px solid var(--color-text-link);
+  color: var(--color-text-link);
 }
 
 .outline-btn:hover {
-  background: #4facfe;
-  color: #ffffff;
+  background: var(--color-text-link);
+  color: var(--color-text-inverse);
 }
 </style>

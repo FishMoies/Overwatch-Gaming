@@ -32,14 +32,12 @@
         <div class="form-group">
           <label>帖子标签</label>
           <div class="tags-area">
-            <!-- 已选标签 -->
             <div v-if="tags.length > 0" class="tags-list">
               <span v-for="(tag, index) in tags" :key="index" class="tag-chip">
                 {{ tag }}
                 <button type="button" class="tag-remove" @click="removeTag(index)">&times;</button>
               </span>
             </div>
-            <!-- 预设标签 -->
             <div class="preset-tags">
               <button
                 type="button"
@@ -52,7 +50,6 @@
                 {{ preset }}
               </button>
             </div>
-            <!-- 自定义标签输入 -->
             <div class="custom-tag-input-wrapper">
               <input
                 type="text"
@@ -108,7 +105,6 @@ const isSubmitting = ref(false)
 const mentionedUsers = ref([])
 const allUsers = ref([])
 
-// 标签功能
 const presetTags = ['知识', '游戏', '生活']
 const tags = ref([])
 const customTagInput = ref('')
@@ -264,7 +260,7 @@ const goBack = () => {
 .create-post-page {
   min-height: 100vh;
   padding-top: 80px;
-  background: #0f0f1a;
+  background: var(--color-bg);
   padding-left: 20px;
   padding-right: 20px;
   padding-bottom: 40px;
@@ -272,14 +268,14 @@ const goBack = () => {
 }
 
 .form-container {
-  background: #1a1a2e;
+  background: var(--color-surface);
   border-radius: 16px;
   padding: 36px;
   width: 100%;
   max-width: 680px;
   margin: 0 auto;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  border: 1px solid #2a2a4a;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
   animation: slideUp 0.4s ease;
 }
 
@@ -297,7 +293,7 @@ const goBack = () => {
 .page-title {
   font-family: 'SmileySans Oblique', sans-serif;
   font-size: 1.8rem;
-  color: #4facfe;
+  color: var(--color-text-link);
   text-align: center;
   margin-bottom: 32px;
   font-weight: bold;
@@ -319,26 +315,26 @@ const goBack = () => {
 .form-group label {
   font-family: 'MapleMono CN Regular', monospace;
   font-size: 1rem;
-  color: #a0aec0;
+  color: var(--color-text-secondary);
   font-weight: 600;
 }
 
 .form-input,
 .form-select {
   padding: 12px 16px;
-  border: 2px solid #2a2a4a;
+  border: 2px solid var(--color-border);
   border-radius: 8px;
   font-size: 1rem;
   font-family: 'MapleMono CN Regular', monospace;
   transition: border-color 0.2s;
-  background: #0a0a18;
-  color: #e0e0e0;
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
 }
 
 .form-input:focus,
 .form-select:focus {
   outline: none;
-  border-color: #4facfe;
+  border-color: var(--color-text-link);
 }
 
 .char-count {
@@ -346,7 +342,7 @@ const goBack = () => {
   right: 12px;
   bottom: -22px;
   font-size: 0.8rem;
-  color: #6c757d;
+  color: var(--color-text-tertiary);
 }
 
 .rich-text-editor-wrapper {
@@ -369,8 +365,8 @@ const goBack = () => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: #4facfe;
-  color: #fff;
+  background: var(--color-text-link);
+  color: var(--color-text-inverse);
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 0.85rem;
@@ -380,7 +376,7 @@ const goBack = () => {
 .tag-remove {
   background: none;
   border: none;
-  color: #fff;
+  color: var(--color-text-inverse);
   font-size: 1.1rem;
   cursor: pointer;
   padding: 0;
@@ -402,9 +398,9 @@ const goBack = () => {
 .preset-tag {
   padding: 6px 16px;
   border-radius: 20px;
-  border: 2px solid #2a2a4a;
+  border: 2px solid var(--color-border);
   background: transparent;
-  color: #a0aec0;
+  color: var(--color-text-secondary);
   font-family: 'MapleMono CN Regular', monospace;
   font-size: 0.9rem;
   cursor: pointer;
@@ -412,14 +408,14 @@ const goBack = () => {
 }
 
 .preset-tag:hover {
-  border-color: #4facfe;
-  color: #e0e0e0;
+  border-color: var(--color-text-link);
+  color: var(--color-text-primary);
 }
 
 .preset-tag.active {
-  background: #4facfe;
-  border-color: #4facfe;
-  color: #fff;
+  background: var(--color-text-link);
+  border-color: var(--color-text-link);
+  color: var(--color-text-inverse);
 }
 
 .custom-tag-input-wrapper {
@@ -432,7 +428,7 @@ const goBack = () => {
 }
 
 .mentioned-users {
-  background: #252545;
+  background: var(--color-surface-hover);
   border-radius: 10px;
   padding: 16px;
   margin-top: 8px;
@@ -441,7 +437,7 @@ const goBack = () => {
 .mentioned-users-title {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #a0aec0;
+  color: var(--color-text-secondary);
   margin: 0 0 12px 0;
 }
 
@@ -455,11 +451,11 @@ const goBack = () => {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #1a1a2e;
+  background: var(--color-surface);
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 0.85rem;
-  border: 1px solid #2a2a4a;
+  border: 1px solid var(--color-border);
 }
 
 .mentioned-user-avatar {
@@ -470,7 +466,7 @@ const goBack = () => {
 }
 
 .mentioned-user-name {
-  color: #4facfe;
+  color: var(--color-text-link);
   font-weight: 500;
 }
 
@@ -483,8 +479,8 @@ const goBack = () => {
 .submit-button {
   flex: 1;
   padding: 14px;
-  background: linear-gradient(135deg, #4facfe 0%, #667eea 100%);
-  color: white;
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
   border: none;
   border-radius: 10px;
   font-family: 'MapleMono CN Regular', monospace;
@@ -496,7 +492,7 @@ const goBack = () => {
 
 .submit-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(79, 172, 254, 0.4);
+  box-shadow: 0 10px 20px var(--color-brand-bg);
 }
 
 .submit-button:disabled {
@@ -507,8 +503,8 @@ const goBack = () => {
 .back-button {
   flex: 1;
   background: transparent;
-  color: #a0aec0;
-  border: 2px solid #2a2a4a;
+  color: var(--color-text-secondary);
+  border: 2px solid var(--color-border);
   padding: 14px;
   border-radius: 10px;
   font-family: 'MapleMono CN Regular', monospace;
@@ -519,8 +515,8 @@ const goBack = () => {
 }
 
 .back-button:hover {
-  background: #252545;
-  border-color: #4facfe;
-  color: #e0e0e0;
+  background: var(--color-surface-hover);
+  border-color: var(--color-text-link);
+  color: var(--color-text-primary);
 }
 </style>

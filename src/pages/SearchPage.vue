@@ -125,8 +125,7 @@ const performSearch = async () => {
   const q = searchQuery.value.trim()
   try {
     if (activeTab.value === 'posts') {
-      // 使用后端搜索 API（支持 search 参数，服务端过滤）
-      const searchResults = await postService.searchPosts(query)
+      const searchResults = await postService.searchPosts(q)
       posts.value = searchResults.filter(post => {
         return post.parentId === null || post.parentId === undefined
       }).map(post => ({
@@ -139,10 +138,9 @@ const performSearch = async () => {
         rankInfo: { icon: getPostRankIcon(post.postrank) }
       }))
     } else {
-      // 使用后端搜索 API 搜索用户
       const res = await authApi.getAllUsers()
       const allUsers = res.success ? res.users : []
-      const lowerQuery = query.toLowerCase()
+      const lowerQuery = q.toLowerCase()
       users.value = allUsers.filter(user => {
         return (
           (user.uid && user.uid.toLowerCase().includes(lowerQuery)) ||
@@ -160,6 +158,11 @@ const performSearch = async () => {
   finally { loading.value = false }
 }
 
+const getPostRankIcon = (rank) => {
+  const icons = { 1: '🥉', 2: '🥈', 3: '🥇', 4: '💎', 5: '👑' }
+  return icons[rank] || '🔵'
+}
+
 const viewProfile = (uid) => router.push('/user/' + encodeURIComponent(String(uid)))
 const viewPostDetail = (pid) => { if (pid) router.push('/post/' + encodeURIComponent(pid)) }
 
@@ -170,7 +173,7 @@ watch(activeTab, () => { if (searchQuery.value.trim()) performSearch() })
 .search-page {
   min-height: 100vh;
   padding-top: 76px;
-  background: #0f0f1a;
+  background: var(--color-bg);
 }
 
 .search-container {
@@ -185,7 +188,7 @@ watch(activeTab, () => { if (searchQuery.value.trim()) performSearch() })
   gap: 10px;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #e0e0e0;
+  color: var(--color-text-primary);
   font-family: 'SmileySans Oblique', sans-serif;
   margin: 0 0 20px;
 }
@@ -199,27 +202,27 @@ watch(activeTab, () => { if (searchQuery.value.trim()) performSearch() })
 .search-input {
   flex: 1;
   padding: 12px 16px;
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border: 1.5px solid var(--color-border);
   border-radius: 10px;
   font-size: 0.95rem;
   font-family: 'MapleMono CN Regular', monospace;
   transition: all 0.25s ease;
-  background: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
   outline: none;
 }
 
-.search-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+.search-input::placeholder { color: var(--color-text-tertiary); }
 
 .search-input:focus {
-  border-color: rgba(79, 172, 254, 0.5);
-  box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+  border-color: var(--color-text-link);
+  box-shadow: 0 0 0 3px var(--color-info-bg);
 }
 
 .search-button {
   padding: 12px 20px;
-  background: linear-gradient(135deg, #4facfe, #667eea);
-  color: white;
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
   border: none;
   border-radius: 10px;
   cursor: pointer;
@@ -228,13 +231,16 @@ watch(activeTab, () => { if (searchQuery.value.trim()) performSearch() })
   transition: all 0.3s ease;
 }
 
-.search-button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3); }
+.search-button:hover { 
+  transform: translateY(-1px); 
+  box-shadow: 0 4px 12px var(--color-brand-bg); 
+}
 
 .search-tabs {
   display: flex;
   gap: 0;
   margin-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .tab-btn {
@@ -243,30 +249,30 @@ watch(activeTab, () => { if (searchQuery.value.trim()) performSearch() })
   background: none;
   font-family: 'MapleMono CN Regular', monospace;
   font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-tertiary);
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
   transition: all 0.25s ease;
 }
 
-.tab-btn.active { color: #4facfe; border-bottom-color: #4facfe; font-weight: 600; }
-.tab-btn:hover { color: rgba(255, 255, 255, 0.7); }
+.tab-btn.active { color: var(--color-text-link); border-bottom-color: var(--color-text-link); font-weight: 600; }
+.tab-btn:hover { color: var(--color-text-secondary); }
 
 .search-results { min-height: 200px; }
 
 .loading, .empty-state {
-  text-align: center; padding: 60px 20px; color: rgba(255, 255, 255, 0.35);
+  text-align: center; padding: 60px 20px; color: var(--color-text-tertiary);
   font-size: 1rem;
 }
 
-.empty-icon { margin-bottom: 12px; color: rgba(255, 255, 255, 0.1); display: flex; justify-content: center; }
+.empty-icon { margin-bottom: 12px; color: var(--color-border); display: flex; justify-content: center; }
 
 .result-card {
-  background: rgba(20, 25, 45, 0.88);
+  background: var(--color-surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-border-light);
   border-radius: 14px;
   padding: 16px 20px;
   margin-bottom: 12px;
@@ -276,22 +282,22 @@ watch(activeTab, () => { if (searchQuery.value.trim()) performSearch() })
 
 .result-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(79, 172, 254, 0.2);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  border-color: var(--color-text-link);
+  box-shadow: var(--shadow-md);
 }
 
 .result-header { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
 .result-rank { font-size: 0.9rem; }
-.result-pid { font-size: 0.78rem; color: rgba(255, 255, 255, 0.3); font-family: 'MapleMono CN Regular', monospace; }
-.result-title { font-size: 1rem; font-weight: 600; color: rgba(255, 255, 255, 0.85); margin-bottom: 6px; }
-.result-excerpt { font-size: 0.85rem; color: rgba(255, 255, 255, 0.45); margin-bottom: 10px; line-height: 1.5; }
-.result-footer { display: flex; gap: 16px; font-size: 0.78rem; color: rgba(255, 255, 255, 0.25); }
+.result-pid { font-size: 0.78rem; color: var(--color-text-tertiary); font-family: 'MapleMono CN Regular', monospace; }
+.result-title { font-size: 1rem; font-weight: 600; color: var(--color-text-primary); margin-bottom: 6px; }
+.result-excerpt { font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 10px; line-height: 1.5; }
+.result-footer { display: flex; gap: 16px; font-size: 0.78rem; color: var(--color-text-tertiary); }
 
 .user-card {
-  background: rgba(20, 25, 45, 0.88);
+  background: var(--color-surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-border-light);
   border-radius: 14px;
   padding: 16px 20px;
   margin-bottom: 12px;
@@ -303,16 +309,16 @@ watch(activeTab, () => { if (searchQuery.value.trim()) performSearch() })
 
 .user-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(79, 172, 254, 0.2);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  border-color: var(--color-text-link);
+  box-shadow: var(--shadow-md);
 }
 
 .avatar-placeholder {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4facfe, #667eea);
-  color: white;
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -321,14 +327,14 @@ watch(activeTab, () => { if (searchQuery.value.trim()) performSearch() })
 }
 
 .user-info { flex: 1; }
-.user-name { font-weight: 600; color: rgba(255, 255, 255, 0.85); margin-bottom: 2px; }
-.user-uid { font-size: 0.78rem; color: rgba(255, 255, 255, 0.3); margin-bottom: 2px; }
-.user-bio { font-size: 0.82rem; color: rgba(255, 255, 255, 0.45); }
+.user-name { font-weight: 600; color: var(--color-text-primary); margin-bottom: 2px; }
+.user-uid { font-size: 0.78rem; color: var(--color-text-tertiary); margin-bottom: 2px; }
+.user-bio { font-size: 0.82rem; color: var(--color-text-secondary); }
 
 .view-profile-btn {
   padding: 8px 16px;
-  background: linear-gradient(135deg, #4facfe, #667eea);
-  color: white;
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -339,5 +345,5 @@ watch(activeTab, () => { if (searchQuery.value.trim()) performSearch() })
   flex-shrink: 0;
 }
 
-.view-profile-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3); }
+.view-profile-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px var(--color-brand-bg); }
 </style>

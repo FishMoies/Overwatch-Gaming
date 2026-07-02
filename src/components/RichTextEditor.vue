@@ -215,58 +215,58 @@ defineExpose({
 
 <style>
 .rich-text-editor {
-  border: 2px solid #2a2a4a;
+  border: 2px solid var(--color-border);
   border-radius: 10px;
   overflow: hidden;
   transition: border-color 0.3s ease;
-  background: #0a0a18;
+  background: var(--color-surface-hover);
 }
 .rich-text-editor:focus-within {
-  border-color: #4facfe;
-  box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.15);
+  border-color: var(--color-text-link);
+  box-shadow: 0 0 0 3px var(--color-info-bg);
 }
 .editor-toolbar {
   display: flex; flex-wrap: wrap; gap: 4px; padding: 10px;
-  background: #1a1a2e; border-bottom: 1px solid #2a2a4a; align-items: center;
+  background: var(--color-surface); border-bottom: 1px solid var(--color-border); align-items: center;
 }
 .editor-toolbar button {
   display: flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px; border: 1px solid #2a2a4a; border-radius: 6px;
-  background: #252545; color: #a0aec0; font-size: 14px; font-weight: 500;
+  width: 36px; height: 36px; border: 1px solid var(--color-border); border-radius: 6px;
+  background: var(--color-surface-hover); color: var(--color-text-secondary); font-size: 14px; font-weight: 500;
   cursor: pointer; transition: all 0.2s ease;
 }
-.editor-toolbar button:hover { background: #3a3a6a; border-color: #4facfe; color: #e0e0e0; }
-.editor-toolbar button.is-active { background: #4facfe; color: #ffffff; border-color: #4facfe; }
-.editor-toolbar .mention-button:hover { background: #4facfe; color: white; border-color: #4facfe; }
+.editor-toolbar button:hover { background: var(--color-surface-active); border-color: var(--color-text-link); color: var(--color-text-primary); }
+.editor-toolbar button.is-active { background: var(--color-text-link); color: var(--color-text-inverse); border-color: var(--color-text-link); }
+.editor-toolbar .mention-button:hover { background: var(--color-text-link); color: white; border-color: var(--color-text-link); }
 .editor-toolbar .bilibili-button { background: #fb7299; color: white !important; border-color: #fb7299; width: 36px; font-weight: bold; }
 .editor-toolbar .bilibili-button:hover { background: #f25d8c; }
-.editor-toolbar .git-button { background: #2d8a4e; color: white !important; border-color: #2d8a4e; width: 36px; font-weight: bold; }
+.editor-toolbar .git-button { background: var(--color-success); color: white !important; border-color: var(--color-success); width: 36px; font-weight: bold; }
 .editor-toolbar .git-button:hover { background: #36a85e; }
-.toolbar-divider { width: 1px; height: 24px; background: #2a2a4a; margin: 0 4px; }
+.toolbar-divider { width: 1px; height: 24px; background: var(--color-border); margin: 0 4px; }
 .toolbar-icon { font-family: 'SmileySans Oblique', sans-serif; font-weight: 600; }
 .editor-content { min-height: 200px; max-height: 400px; overflow-y: auto; padding: 16px; }
-.char-count { text-align: right; padding: 8px 16px; font-size: 0.9em; color: #a0aec0; border-top: 1px solid #2a2a4a; background: #1a1a2e; }
+.char-count { text-align: right; padding: 8px 16px; font-size: 0.9em; color: var(--color-text-secondary); border-top: 1px solid var(--color-border); background: var(--color-surface); }
 
 /* TipTap编辑器内部样式 */
 .tiptap-editor { font-family: var(--content-font); outline: none; min-height: 150px; }
-.tiptap-editor p { margin: 0 0 1em 0; line-height: 1.6; color: #e0e0e0; }
-.tiptap-editor h1 { font-size: 2em; font-weight: bold; margin: 1em 0 0.5em; line-height: 1.2; color: #e0e0e0; }
-.tiptap-editor h2 { font-size: 1.5em; font-weight: bold; margin: 1em 0 0.5em; line-height: 1.3; color: #e0e0e0; }
-.tiptap-editor h3 { font-size: 1.17em; font-weight: bold; margin: 1em 0 0.5em; line-height: 1.4; color: #e0e0e0; }
+.tiptap-editor p { margin: 0 0 1em 0; line-height: 1.6; color: var(--color-text-primary); }
+.tiptap-editor h1 { font-size: 2em; font-weight: bold; margin: 1em 0 0.5em; line-height: 1.2; color: var(--color-text-primary); }
+.tiptap-editor h2 { font-size: 1.5em; font-weight: bold; margin: 1em 0 0.5em; line-height: 1.3; color: var(--color-text-primary); }
+.tiptap-editor h3 { font-size: 1.17em; font-weight: bold; margin: 1em 0 0.5em; line-height: 1.4; color: var(--color-text-primary); }
 .tiptap-editor ul, .tiptap-editor ol { padding-left: 1.5em; margin: 1em 0; }
 .tiptap-editor li { margin: 0.5em 0; }
-.tiptap-editor blockquote { border-left: 3px solid #4facfe; margin: 1em 0; padding-left: 1em; color: #a0aec0; font-style: italic; }
-.tiptap-editor hr { border: none; border-top: 2px solid #2a2a4a; margin: 2em 0; }
-.tiptap-editor .is-empty::before { content: attr(data-placeholder); color: #6c757d; float: left; height: 0; pointer-events: none; }
+.tiptap-editor blockquote { border-left: 3px solid var(--color-text-link); margin: 1em 0; padding-left: 1em; color: var(--color-text-secondary); font-style: italic; }
+.tiptap-editor hr { border: none; border-top: 2px solid var(--color-border); margin: 2em 0; }
+.tiptap-editor .is-empty::before { content: attr(data-placeholder); color: var(--color-text-tertiary); float: left; height: 0; pointer-events: none; }
 
 /* Git 卡片 */
 git-card.git-card {
   display: block;
-  border: 1px solid #2d8a4e;
+  border: 1px solid var(--color-success);
   border-radius: 8px;
   padding: 12px 16px;
   margin: 8px 0;
-  background: #0d2818;
+  background: var(--color-success-bg);
   cursor: pointer;
   transition: border-color 0.2s;
 }
@@ -284,7 +284,7 @@ git-card.git-card:hover {
 }
 .git-card-title {
   font-weight: 600;
-  color: #4ade80;
+  color: var(--color-success);
   font-size: 1em;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -312,66 +312,66 @@ git-card.git-card:hover {
 }
 .git-contributor-name {
   font-size: 0.85em;
-  color: #a0aec0;
+  color: var(--color-text-secondary);
   margin-right: 2px;
 }
 .git-contributor-more {
   font-size: 0.82em;
-  color: #6c757d;
+  color: var(--color-text-tertiary);
   margin-left: 2px;
 }
 
 /* 用户提及 */
-.user-mention { background-color: #252545; color: #4facfe; padding: 2px 6px; border-radius: 4px; font-weight: 500; cursor: pointer; border: 1px solid #4facfe; }
-.user-mention:hover { background-color: #3a3a6a; text-decoration: underline; }
+.user-mention { background-color: var(--color-surface-hover); color: var(--color-text-link); padding: 2px 6px; border-radius: 4px; font-weight: 500; cursor: pointer; border: 1px solid var(--color-text-link); }
+.user-mention:hover { background-color: var(--color-surface-active); text-decoration: underline; }
 
 /* B站 bv */
 .bilibili-inline { background-color: #fb7299; color: white !important; padding: 2px 10px; border-radius: 4px; font-weight: 600; font-size: 0.9em; cursor: pointer; display: inline-block; white-space: nowrap; }
 
 .tippy-box { max-width: none !important; }
 
-.mention-suggestion-popup { display: inline-block; background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 8px; padding: 4px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.3); width: max-content; min-width: 160px; max-width: 400px; }
+.mention-suggestion-popup { display: inline-block; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 4px 0; box-shadow: var(--shadow-lg); width: max-content; min-width: 160px; max-width: 400px; }
 .mention-suggestion-list { list-style: none; margin: 0; padding: 0; }
 .mention-suggestion-item { display: flex; align-items: center; padding: 6px 10px; cursor: pointer; gap: 8px; width: max-content; white-space: nowrap; }
-.mention-suggestion-item:hover { background: #252545; }
+.mention-suggestion-item:hover { background: var(--color-surface-hover); }
 .mention-suggestion-avatar { width: 24px !important; height: 24px !important; border-radius: 50%; flex-shrink: 0; object-fit: cover; }
-.mention-suggestion-username { font-size: 14px; color: #e0e0e0; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
-.mention-suggestion-userid { margin-left: auto; font-size: 12px; color: #6c757d; flex-shrink: 0; }
+.mention-suggestion-username { font-size: 14px; color: var(--color-text-primary); max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
+.mention-suggestion-userid { margin-left: auto; font-size: 12px; color: var(--color-text-tertiary); flex-shrink: 0; }
 
 /* B站弹窗 */
 .bilibili-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-.bilibili-modal { background: #1a1a2e; border-radius: 16px; padding: 32px; width: 90%; max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: modalSlideIn 0.2s ease; border: 1px solid #2a2a4a; }
+.bilibili-modal { background: var(--color-surface); border-radius: 16px; padding: 32px; width: 90%; max-width: 420px; box-shadow: var(--shadow-xl); animation: modalSlideIn 0.2s ease; border: 1px solid var(--color-border); }
 @keyframes modalSlideIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.bilibili-modal-title { font-family: 'SmileySans Oblique', sans-serif; font-size: 1.5rem; color: #e0e0e0; margin: 0 0 8px; }
-.bilibili-modal-desc { font-family: 'MapleMono CN Regular', monospace; color: #a0aec0; font-size: 0.9rem; margin: 0 0 20px; }
-.bilibili-modal-input { width: 100%; padding: 12px 16px; border: 2px solid #2a2a4a; border-radius: 10px; font-family: 'MapleMono CN Regular', monospace; font-size: 1rem; outline: none; transition: border-color 0.2s; box-sizing: border-box; background: #0a0a18; color: #e0e0e0; }
+.bilibili-modal-title { font-family: 'SmileySans Oblique', sans-serif; font-size: 1.5rem; color: var(--color-text-primary); margin: 0 0 8px; }
+.bilibili-modal-desc { font-family: 'MapleMono CN Regular', monospace; color: var(--color-text-secondary); font-size: 0.9rem; margin: 0 0 20px; }
+.bilibili-modal-input { width: 100%; padding: 12px 16px; border: 2px solid var(--color-border); border-radius: 10px; font-family: 'MapleMono CN Regular', monospace; font-size: 1rem; outline: none; transition: border-color 0.2s; box-sizing: border-box; background: var(--color-surface-hover); color: var(--color-text-primary); }
 .bilibili-modal-input:focus { border-color: #fb7299; }
 .bilibili-modal-actions { display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end; }
-.bilibili-modal-cancel { padding: 10px 24px; border: 2px solid #2a2a4a; border-radius: 8px; background: transparent; color: #a0aec0; font-family: 'MapleMono CN Regular', monospace; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; }
-.bilibili-modal-cancel:hover { background: #252545; border-color: #4facfe; color: #e0e0e0; }
+.bilibili-modal-cancel { padding: 10px 24px; border: 2px solid var(--color-border); border-radius: 8px; background: transparent; color: var(--color-text-secondary); font-family: 'MapleMono CN Regular', monospace; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; }
+.bilibili-modal-cancel:hover { background: var(--color-surface-hover); border-color: var(--color-text-link); color: var(--color-text-primary); }
 .bilibili-modal-confirm { padding: 10px 24px; border: none; border-radius: 8px; background: #fb7299; color: white; font-family: 'MapleMono CN Regular', monospace; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
 .bilibili-modal-confirm:hover { background: #f25d8c; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(251,114,153,0.3); }
-.bilibili-modal-error { color: #dc3545; font-size: 0.85rem; margin: 12px 0 0; font-family: 'MapleMono CN Regular', monospace; }
+.bilibili-modal-error { color: var(--color-error); font-size: 0.85rem; margin: 12px 0 0; font-family: 'MapleMono CN Regular', monospace; }
 
 /* Git 弹窗 */
 .git-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-.git-modal { background: #1a1a2e; border-radius: 16px; padding: 32px; width: 90%; max-width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: modalSlideIn 0.2s ease; border: 1px solid #2d8a4e; }
-.git-modal-title { font-family: 'SmileySans Oblique', sans-serif; font-size: 1.5rem; color: #4ade80; margin: 0 0 8px; }
-.git-modal-desc { font-family: 'MapleMono CN Regular', monospace; color: #a0aec0; font-size: 0.9rem; margin: 0 0 20px; }
-.git-modal-input { width: 100%; padding: 12px 16px; border: 2px solid #2a2a4a; border-radius: 10px; font-family: 'MapleMono CN Regular', monospace; font-size: 1rem; outline: none; transition: border-color 0.2s; box-sizing: border-box; background: #0a0a18; color: #e0e0e0; }
-.git-modal-input:focus { border-color: #2d8a4e; }
+.git-modal { background: var(--color-surface); border-radius: 16px; padding: 32px; width: 90%; max-width: 480px; box-shadow: var(--shadow-xl); animation: modalSlideIn 0.2s ease; border: 1px solid var(--color-success); }
+.git-modal-title { font-family: 'SmileySans Oblique', sans-serif; font-size: 1.5rem; color: var(--color-success); margin: 0 0 8px; }
+.git-modal-desc { font-family: 'MapleMono CN Regular', monospace; color: var(--color-text-secondary); font-size: 0.9rem; margin: 0 0 20px; }
+.git-modal-input { width: 100%; padding: 12px 16px; border: 2px solid var(--color-border); border-radius: 10px; font-family: 'MapleMono CN Regular', monospace; font-size: 1rem; outline: none; transition: border-color 0.2s; box-sizing: border-box; background: var(--color-surface-hover); color: var(--color-text-primary); }
+.git-modal-input:focus { border-color: var(--color-success); }
 .git-modal-input:disabled { opacity: 0.6; }
-.git-modal-loading { display: flex; align-items: center; gap: 8px; margin-top: 12px; color: #4ade80; font-size: 0.9rem; }
-.git-loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #2d8a4e; border-top-color: transparent; border-radius: 50%; animation: gitSpinner 0.6s linear infinite; }
+.git-modal-loading { display: flex; align-items: center; gap: 8px; margin-top: 12px; color: var(--color-success); font-size: 0.9rem; }
+.git-loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--color-success); border-top-color: transparent; border-radius: 50%; animation: gitSpinner 0.6s linear infinite; }
 @keyframes gitSpinner { to { transform: rotate(360deg); } }
 .git-modal-actions { display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end; }
-.git-modal-cancel { padding: 10px 24px; border: 2px solid #2a2a4a; border-radius: 8px; background: transparent; color: #a0aec0; font-family: 'MapleMono CN Regular', monospace; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; }
-.git-modal-cancel:hover { background: #252545; border-color: #4facfe; color: #e0e0e0; }
+.git-modal-cancel { padding: 10px 24px; border: 2px solid var(--color-border); border-radius: 8px; background: transparent; color: var(--color-text-secondary); font-family: 'MapleMono CN Regular', monospace; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; }
+.git-modal-cancel:hover { background: var(--color-surface-hover); border-color: var(--color-text-link); color: var(--color-text-primary); }
 .git-modal-cancel:disabled { opacity: 0.5; cursor: not-allowed; }
-.git-modal-confirm { padding: 10px 24px; border: none; border-radius: 8px; background: #2d8a4e; color: white; font-family: 'MapleMono CN Regular', monospace; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-.git-modal-confirm:hover { background: #36a85e; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(45,138,78,0.3); }
+.git-modal-confirm { padding: 10px 24px; border: none; border-radius: 8px; background: var(--color-success); color: white; font-family: 'MapleMono CN Regular', monospace; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.git-modal-confirm:hover { background: #36a85e; transform: translateY(-1px); box-shadow: 0 4px 12px var(--color-success-bg); }
 .git-modal-confirm:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-.git-modal-error { color: #dc3545; font-size: 0.85rem; margin: 12px 0 0; font-family: 'MapleMono CN Regular', monospace; }
+.git-modal-error { color: var(--color-error); font-size: 0.85rem; margin: 12px 0 0; font-family: 'MapleMono CN Regular', monospace; }
 
 @media (max-width: 768px) {
   .editor-toolbar { gap: 2px; padding: 8px; }

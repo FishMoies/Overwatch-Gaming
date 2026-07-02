@@ -3,6 +3,7 @@
  *
  * <bv>BVxxx</bv> → B站嵌入式视频
  * <git data-*></git> → Git仓库信息卡片
+ * <span class="user-mention">@xxx</span> → 可点击的用户提及链接
  */
 
 // 匹配 <bv>BVxxx</bv> 标签
@@ -10,6 +11,9 @@ const BV_TAG_RE = /<bv[^>]*>([a-zA-Z0-9]+)<\/bv>/gi
 
 // 匹配 <git> 标签（包含子内容）
 const GIT_TAG_RE = /<git\s+([^>]*?)>[\s\S]*?<\/git>/gi
+
+// 匹配 <span class="user-mention">@xxx</span>
+const MENTION_TAG_RE = /<span([^>]*class="user-mention"[^>]*)>@([^<]*)<\/span>/gi
 
 function isValidBvid(bvid) {
   return /^BV[a-zA-Z0-9]{10}$/.test(bvid)
@@ -39,6 +43,25 @@ function decodeAttrs(s) {
   // 最后替换 &
   while (s.indexOf(d) !== -1) s = s.replace(d, AMP)
   return s
+}
+
+function buildMentionLink(attrs, label) {
+  // 从 span 属性中提取 data-id, data-username
+  var userId = ''
+  var username = ''
+  var m
+
+  m = attrs.match(/data-id="([^"]*)"/)
+  if (m) userId = m[1]
+
+  m = attrs.match(/data-username="([^"]*)"/)
+  if (m) username = m[1]
+
+  // 如果没有 data-id 但有 data-username，用 username 做后备；反之亦然
+  var linkId = userId || username
+  var linkLabel = label || username || '未知用户'
+
+  return '<a class="user-mention-link" data-user-id="' + linkId + '" href="javascript:void(0)">@' + linkLabel + '</a>'
 }
 
 function buildGitCard(attrs) {
@@ -98,6 +121,9 @@ export function processContent(content) {
   r = r.replace(BV_TAG_RE, function(m, b) {
     if (isValidBvid(b)) return buildBilibiliIframe(b)
     return m
+  })
+  r = r.replace(MENTION_TAG_RE, function(m, attrs, label) {
+    return buildMentionLink(attrs, label)
   })
   return r
 }

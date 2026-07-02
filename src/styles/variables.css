@@ -147,12 +147,12 @@
 /* ── @font-face Declarations ── */
 @font-face {
   font-family: 'SmileySans Oblique';
-  src: url('/font-smiley-sans.ttf') format('truetype');
+  src: url('/font-smiley-sans.ttf?v=2') format('truetype');
 }
 
 @font-face {
   font-family: 'MapleMono CN Regular';
-  src: url('/font-maple-mono.ttf') format('truetype');
+  src: url('/font-maple-mono.ttf?v=2') format('truetype');
 }
 
 /* ── Global Base Styles ── */
@@ -279,4 +279,25 @@ body .brand-text {
 
 body .english-title {
   font-family: 'SmileySans Oblique', sans-serif !important;
+}
+
+/* ── 提及用户链接（帖子正文和评论中的 @xxx）── */
+.user-mention-link {
+  background-color: var(--color-info-bg);
+  color: var(--color-text-link);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid var(--color-text-link);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-size: inherit;
+  font-family: inherit;
+}
+.user-mention-link:hover {
+  background-color: var(--color-text-link);
+  color: var(--color-text-inverse);
+  text-decoration: none;
 }

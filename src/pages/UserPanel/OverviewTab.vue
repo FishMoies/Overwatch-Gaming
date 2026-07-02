@@ -82,19 +82,19 @@ function formatDate(dateString) {
 }
 
 .stat-card {
-  background: #1a1a2e;
+  background: var(--color-surface);
   border-radius: 14px;
   padding: 24px 16px;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  border: 1px solid #2a2a4a;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
   transition: all 0.3s ease;
 }
 
 .stat-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  border-color: #4facfe;
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-text-link);
 }
 
 .stat-icon {
@@ -105,31 +105,31 @@ function formatDate(dateString) {
 .stat-number {
   font-size: 2.2rem;
   font-weight: 700;
-  color: #4facfe;
+  color: var(--color-text-link);
   margin-bottom: 4px;
 }
 
 .stat-desc {
   font-size: 0.9rem;
-  color: #a0aec0;
+  color: var(--color-text-secondary);
   font-weight: 500;
 }
 
 .info-card {
-  background: #1a1a2e;
+  background: var(--color-surface);
   border-radius: 14px;
   padding: 28px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  border: 1px solid #2a2a4a;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
 }
 
 .card-title {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--color-text-primary);
   margin-bottom: 20px;
   padding-bottom: 12px;
-  border-bottom: 2px solid #4facfe;
+  border-bottom: 2px solid var(--color-text-link);
 }
 
 .info-list {
@@ -143,7 +143,7 @@ function formatDate(dateString) {
   justify-content: space-between;
   align-items: center;
   padding: 14px 0;
-  border-bottom: 1px solid #2a2a4a;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .info-row:last-child {
@@ -153,14 +153,14 @@ function formatDate(dateString) {
 
 .info-label {
   font-weight: 500;
-  color: #a0aec0;
+  color: var(--color-text-secondary);
   font-size: 0.95rem;
   white-space: nowrap;
 }
 
 .info-value {
   font-weight: 500;
-  color: #e0e0e0;
+  color: var(--color-text-primary);
   text-align: right;
   max-width: 60%;
   word-break: break-word;

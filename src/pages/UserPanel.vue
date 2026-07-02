@@ -396,13 +396,13 @@ watch(userInfo, (newVal) => {
 .user-profile {
   min-height: 100vh;
   padding-top: 60px;
-  background: #0f0f1a;
+  background: var(--color-bg);
   font-family: 'MapleMono CN Regular', monospace;
 }
 
 .tab-bar {
-  background: #1a1a2e;
-  border-bottom: 1px solid #2a2a4a;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
   position: sticky;
   top: 60px;
   z-index: 100;
@@ -426,7 +426,7 @@ watch(userInfo, (newVal) => {
   font-family: 'MapleMono CN Regular', monospace;
   font-size: 1rem;
   font-weight: 600;
-  color: #888;
+  color: var(--color-text-tertiary);
   cursor: pointer;
   transition: all 0.3s;
   border-bottom: 3px solid transparent;
@@ -434,13 +434,13 @@ watch(userInfo, (newVal) => {
 }
 
 .tab-btn:hover {
-  color: #4facfe;
-  background: #252545;
+  color: var(--color-text-link);
+  background: var(--color-surface-hover);
 }
 
 .tab-btn.active {
-  color: #4facfe;
-  border-bottom-color: #4facfe;
+  color: var(--color-text-link);
+  border-bottom-color: var(--color-text-link);
 }
 
 .tab-icon {
@@ -481,25 +481,25 @@ watch(userInfo, (newVal) => {
 }
 
 .modal-content {
-  background: #1a1a2e;
-  border: 1px solid #2a2a4a;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
   padding: 28px;
   width: 90%;
   max-width: 420px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  box-shadow: var(--shadow-xl);
 }
 
 .modal-title {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #e0e0e0;
+  color: var(--color-text-primary);
   margin: 0 0 8px;
 }
 
 .modal-hint {
   font-size: 0.9rem;
-  color: #a0aec0;
+  color: var(--color-text-secondary);
   margin: 0 0 20px;
 }
 
@@ -510,10 +510,10 @@ watch(userInfo, (newVal) => {
 .nickname-input {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid #2a2a4a;
+  border: 2px solid var(--color-border);
   border-radius: 10px;
-  background: #0a0a18;
-  color: #e0e0e0;
+  background: var(--color-surface-hover);
+  color: var(--color-text-primary);
   font-family: 'MapleMono CN Regular', monospace;
   font-size: 1rem;
   box-sizing: border-box;
@@ -522,11 +522,11 @@ watch(userInfo, (newVal) => {
 
 .nickname-input:focus {
   outline: none;
-  border-color: #4facfe;
+  border-color: var(--color-text-link);
 }
 
 .nickname-input::placeholder {
-  color: #6c757d;
+  color: var(--color-text-tertiary);
 }
 
 .modal-actions {
@@ -547,23 +547,23 @@ watch(userInfo, (newVal) => {
 }
 
 .cancel-btn {
-  background: #252545;
-  color: #a0aec0;
-  border: 1px solid #2a2a4a;
+  background: var(--color-surface-hover);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
 }
 
 .cancel-btn:hover {
-  background: #2a2a4a;
-  color: #e0e0e0;
+  background: var(--color-surface-active);
+  color: var(--color-text-primary);
 }
 
 .confirm-btn {
-  background: linear-gradient(135deg, #4facfe, #667eea);
-  color: white;
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
 }
 
 .confirm-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(79,172,254,0.3);
+  box-shadow: 0 4px 12px var(--color-brand-bg);
 }
 </style>

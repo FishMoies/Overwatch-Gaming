@@ -60,7 +60,7 @@ function handleAvatarError(e) {
 .cover-bg {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 70%, #e94560 100%);
+  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-hover) 40%, var(--color-info-bg) 70%, var(--color-error-bg) 100%);
   position: relative;
 }
 
@@ -69,9 +69,9 @@ function handleAvatarError(e) {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   background: 
-    radial-gradient(ellipse at 20% 80%, rgba(233, 69, 96, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(79, 172, 254, 0.12) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 50%, rgba(102, 126, 234, 0.08) 0%, transparent 70%);
+    radial-gradient(ellipse at 20% 80%, var(--color-error-bg) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, var(--color-info-bg) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, var(--color-brand-bg) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -119,7 +119,7 @@ function handleAvatarError(e) {
   object-fit: cover;
   border: 4px solid rgba(255, 255, 255, 0.9);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), 0 0 0 2px rgba(255, 255, 255, 0.1);
-  background-color: #f0f2f5;
+  background-color: var(--color-surface-active);
   transition: transform 0.3s ease;
 }
 
@@ -129,7 +129,7 @@ function handleAvatarError(e) {
 
 .profile-header-info {
   flex: 1;
-  color: white;
+  color: var(--color-text-inverse);
   padding-bottom: 4px;
 }
 
@@ -169,7 +169,7 @@ function handleAvatarError(e) {
 .stat-value {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-inverse);
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 

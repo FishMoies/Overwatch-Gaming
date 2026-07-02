@@ -36,20 +36,20 @@ defineEmits(['logout', 'change-password', 'delete-account', 'edit-nickname'])
 }
 
 .settings-card {
-  background: #1a1a2e;
+  background: var(--color-surface);
   border-radius: 14px;
   padding: 28px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  border: 1px solid #2a2a4a;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
 }
 
 .card-title {
   font-size: 1.2rem;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--color-text-primary);
   margin-bottom: 20px;
   padding-bottom: 12px;
-  border-bottom: 2px solid #4facfe;
+  border-bottom: 2px solid var(--color-text-link);
 }
 
 .action-grid {
@@ -78,38 +78,38 @@ defineEmits(['logout', 'change-password', 'delete-account', 'edit-nickname'])
 }
 
 .logout-btn {
-  background: rgba(255, 193, 7, 0.1);
-  border-color: #ffc107;
-  color: #ffc107;
+  background: var(--color-warning-bg);
+  border-color: var(--color-warning);
+  color: var(--color-warning);
 }
 .logout-btn:hover {
-  background: linear-gradient(135deg, #ffc107, #e0a800);
-  color: #1a1a2e;
+  background: linear-gradient(135deg, var(--color-warning), #e0a800);
+  color: var(--color-bg);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 193, 7, 0.3);
+  box-shadow: 0 6px 16px var(--color-warning-bg);
 }
 
 .password-btn {
-  background: rgba(79, 172, 254, 0.1);
-  border-color: #4facfe;
-  color: #4facfe;
+  background: var(--color-info-bg);
+  border-color: var(--color-text-link);
+  color: var(--color-text-link);
 }
 .password-btn:hover {
-  background: linear-gradient(135deg, #4facfe, #667eea);
-  color: #ffffff;
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(79, 172, 254, 0.3);
+  box-shadow: 0 6px 16px var(--color-brand-bg);
 }
 
 .delete-btn {
-  background: rgba(220, 53, 69, 0.15);
-  border-color: #ef4444;
-  color: #ef4444;
+  background: var(--color-error-bg);
+  border-color: var(--color-error);
+  color: var(--color-error);
 }
 .delete-btn:hover {
-  background: #ef4444;
-  color: white;
+  background: var(--color-error);
+  color: var(--color-text-inverse);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(220, 53, 69, 0.3);
+  box-shadow: 0 6px 16px var(--color-error-bg);
 }
 </style>

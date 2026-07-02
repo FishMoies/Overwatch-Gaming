@@ -29,23 +29,23 @@ defineEmits(['close', 'confirm'])
   z-index:1000;
 }
 .modal-content {
-  background: white;
+  background: var(--color-surface);
   border-radius: 16px;
   padding: 30px;
   width: 90%;
   max-width: 480px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  box-shadow: var(--shadow-xl);
 }
 h3 {
   font-family: 'SmileySans Oblique', sans-serif;
   font-size: 1.6rem;
-  color: #333;
+  color: var(--color-text-primary);
   margin-bottom: 20px;
   text-align: center;
 }
-.warning { color: #dc3545; font-weight: 600; text-align: center; margin: 12px 0; }
+.warning { color: var(--color-error); font-weight: 600; text-align: center; margin: 12px 0; }
 .msg { padding: 10px; border-radius: 8px; text-align: center; font-weight: 500; }
-.msg.error { background: #f8d7da; color: #721c24; }
+.msg.error { background: var(--color-error-bg); color: var(--color-error); }
 .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; }
 .btn {
   padding: 10px 24px;
@@ -56,8 +56,8 @@ h3 {
   cursor: pointer;
   transition: all 0.3s;
 }
-.cancel { background: #6c757d; color: white; }
-.cancel:hover { background: #5a6268; }
-.danger { background: #dc3545; color: white; }
+.cancel { background: var(--color-text-tertiary); color: var(--color-text-inverse); }
+.cancel:hover { background: var(--color-text-secondary); }
+.danger { background: var(--color-error); color: var(--color-text-inverse); }
 .danger:hover { background: #c82333; }
 </style>

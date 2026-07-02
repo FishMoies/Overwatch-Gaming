@@ -176,8 +176,8 @@ onUnmounted(() => {
   width: 36px;
   height: 36px;
   border: none;
-  background: rgba(0, 0, 0, 0.04);
-  color: rgba(0, 0, 0, 0.5);
+  background: var(--color-surface-hover);
+  color: var(--color-text-secondary);
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -185,8 +185,8 @@ onUnmounted(() => {
 }
 
 .search-trigger:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: #1a1a2e;
+  background: var(--color-surface-active);
+  color: var(--color-text-primary);
   transform: scale(1.05);
 }
 
@@ -197,8 +197,8 @@ onUnmounted(() => {
   height: 36px;
   width: 220px;
   padding: 0 4px 0 12px;
-  background: rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: var(--color-surface-hover);
+  border: 1px solid var(--color-border);
   border-radius: 18px;
   animation: barIn 0.25s cubic-bezier(0.22, 1, 0.36, 1);
   flex-shrink: 0;
@@ -210,13 +210,13 @@ onUnmounted(() => {
   border: none;
   outline: none;
   background: transparent;
-  color: #1a1a2e;
+  color: var(--color-text-primary);
   font-size: 0.85rem;
   font-family: 'MapleMono CN Regular', monospace;
 }
 
 .search-input::placeholder {
-  color: rgba(0, 0, 0, 0.3);
+  color: var(--color-text-tertiary);
 }
 
 .search-close {
@@ -226,8 +226,8 @@ onUnmounted(() => {
   width: 26px;
   height: 26px;
   border: none;
-  background: rgba(0, 0, 0, 0.06);
-  color: rgba(0, 0, 0, 0.5);
+  background: var(--color-surface-hover);
+  color: var(--color-text-secondary);
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -235,8 +235,8 @@ onUnmounted(() => {
 }
 
 .search-close:hover {
-  background: rgba(0, 0, 0, 0.1);
-  color: #1a1a2e;
+  background: var(--color-surface-active);
+  color: var(--color-text-primary);
 }
 
 /* ── 下拉搜索建议 ── */
@@ -246,19 +246,19 @@ onUnmounted(() => {
   right: 0;
   width: 280px;
   max-width: calc(100vw - 24px);
-  background: rgba(255, 255, 255, 0.98);
+  background: var(--glass-bg-strong);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-lg);
   padding: 10px;
   animation: fadeIn 0.2s ease;
 }
 
 .dropdown-title {
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.8);
+  color: var(--color-text-primary);
   margin-bottom: 8px;
   font-size: 0.85rem;
 }
@@ -279,11 +279,11 @@ onUnmounted(() => {
 .dropdown-section-title {
   font-size: 0.7rem;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.35);
+  color: var(--color-text-tertiary);
   text-transform: uppercase;
   margin-bottom: 4px;
   padding-bottom: 4px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .dropdown-item {
@@ -297,7 +297,7 @@ onUnmounted(() => {
 }
 
 .dropdown-item:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--color-surface-hover);
 }
 
 .dropdown-avatar {
@@ -318,7 +318,7 @@ onUnmounted(() => {
   width: 30px;
   height: 30px;
   border-radius: 6px;
-  background: rgba(0, 0, 0, 0.04);
+  background: var(--color-surface-hover);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -334,7 +334,7 @@ onUnmounted(() => {
 .dropdown-name {
   font-size: 0.85rem;
   font-weight: 500;
-  color: rgba(0, 0, 0, 0.85);
+  color: var(--color-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -342,7 +342,7 @@ onUnmounted(() => {
 
 .dropdown-sub {
   font-size: 0.7rem;
-  color: rgba(0, 0, 0, 0.4);
+  color: var(--color-text-tertiary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -352,7 +352,7 @@ onUnmounted(() => {
 .dropdown-empty {
   text-align: center;
   padding: 18px;
-  color: rgba(0, 0, 0, 0.35);
+  color: var(--color-text-tertiary);
   font-size: 0.85rem;
 }
 

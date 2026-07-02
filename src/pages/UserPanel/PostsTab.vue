@@ -140,7 +140,7 @@ function renderPreview(html, max = 150) {
 .posts-title {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #4facfe;
+  color: var(--color-text-link);
   margin: 0;
 }
 
@@ -157,8 +157,8 @@ function renderPreview(html, max = 150) {
   gap: 6px;
   padding: 10px 22px;
   background: transparent;
-  color: #e0e0e0;
-  border: 2px solid #ffffff;
+  color: var(--color-text-primary);
+  border: 2px solid var(--color-text-primary);
   border-radius: 10px;
   font-family: 'MapleMono CN Regular', monospace;
   font-weight: 600;
@@ -169,28 +169,28 @@ function renderPreview(html, max = 150) {
 
 .create-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255,255,255,0.25);
-  background: rgba(255,255,255,0.08);
+  box-shadow: 0 6px 20px var(--color-brand-bg);
+  background: var(--color-surface-hover);
 }
 
 .posts-stats {
   display: flex;
   gap: 12px;
   font-size: 0.9rem;
-  color: #a0aec0;
+  color: var(--color-text-secondary);
 }
 
 .state-message {
   text-align: center;
   padding: 60px 20px;
-  color: #a0aec0;
+  color: var(--color-text-secondary);
 }
 
 .spinner {
   width: 36px;
   height: 36px;
-  border: 3px solid #2a2a4a;
-  border-top: 3px solid #4facfe;
+  border: 3px solid var(--color-border);
+  border-top: 3px solid var(--color-text-link);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 12px;
@@ -209,8 +209,8 @@ function renderPreview(html, max = 150) {
 .create-btn-empty {
   padding: 10px 24px;
   background: transparent;
-  color: #e0e0e0;
-  border: 2px solid #ffffff;
+  color: var(--color-text-primary);
+  border: 2px solid var(--color-text-primary);
   border-radius: 10px;
   font-family: 'MapleMono CN Regular', monospace;
   font-weight: 600;
@@ -224,8 +224,8 @@ function renderPreview(html, max = 150) {
 
 .create-btn-empty:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(255,255,255,0.25);
-  background: rgba(255,255,255,0.08);
+  box-shadow: 0 6px 20px var(--color-brand-bg);
+  background: var(--color-surface-hover);
 }
 
 .posts-waterfall {
@@ -235,27 +235,27 @@ function renderPreview(html, max = 150) {
 }
 
 .post-card {
-  background: #1a1a2e;
+  background: var(--color-surface);
   border-radius: 14px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  border: 1px solid #2a2a4a;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
   transition: all 0.3s ease;
-  border-left: 4px solid #4facfe;
+  border-left: 4px solid var(--color-text-link);
 }
 
 .post-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  border-color: #4facfe;
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-text-link);
 }
 
-.post-category-general { border-left-color: #6c757d; }
-.post-category-team { border-left-color: #22c55e; }
+.post-category-general { border-left-color: var(--color-text-tertiary); }
+.post-category-team { border-left-color: var(--color-success); }
 .post-category-strategy { border-left-color: #17a2b8; }
-.post-category-highlight { border-left-color: #ffc107; }
+.post-category-highlight { border-left-color: var(--color-warning); }
 .post-category-question { border-left-color: #fd7e14; }
-.post-category-announcement { border-left-color: #ef4444; }
+.post-category-announcement { border-left-color: var(--color-error); }
 
 .post-header {
   display: flex;
@@ -269,26 +269,26 @@ function renderPreview(html, max = 150) {
   font-weight: 600;
   padding: 4px 12px;
   border-radius: 20px;
-  background: #252545;
-  color: #4facfe;
+  background: var(--color-surface-hover);
+  color: var(--color-text-link);
 }
 
 .post-date {
   font-size: 0.8rem;
-  color: #a0aec0;
+  color: var(--color-text-secondary);
 }
 
 .post-title {
   font-size: 1.15rem;
   font-weight: 700;
-  color: #e0e0e0;
+  color: var(--color-text-primary);
   margin-bottom: 10px;
   line-height: 1.4;
 }
 
 .post-content {
   font-family: var(--content-font);
-  color: #a0aec0;
+  color: var(--color-text-secondary);
   line-height: 1.6;
   margin-bottom: 16px;
   font-size: 0.9rem;
@@ -299,7 +299,7 @@ function renderPreview(html, max = 150) {
   justify-content: space-between;
   align-items: center;
   padding-top: 12px;
-  border-top: 1px solid #2a2a4a;
+  border-top: 1px solid var(--color-border);
 }
 
 .post-stats {
@@ -309,7 +309,7 @@ function renderPreview(html, max = 150) {
 
 .stat {
   font-size: 0.85rem;
-  color: #a0aec0;
+  color: var(--color-text-secondary);
 }
 
 .post-actions {
@@ -328,23 +328,23 @@ function renderPreview(html, max = 150) {
 }
 
 .view-btn {
-  background: linear-gradient(135deg, #4facfe, #667eea);
-  color: #ffffff;
+  background: var(--color-brand);
+  color: var(--color-text-inverse);
 }
 
 .view-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(79,172,254,0.3);
+  box-shadow: 0 4px 12px var(--color-brand-bg);
 }
 
 .del-btn {
-  background: rgba(220,53,69,0.15);
-  color: #ef4444;
-  border: 1.5px solid #ef4444;
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border: 1.5px solid var(--color-error);
 }
 
 .del-btn:hover {
-  background: #ef4444;
-  color: white;
+  background: var(--color-error);
+  color: var(--color-text-inverse);
 }
 </style>

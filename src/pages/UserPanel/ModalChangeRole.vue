@@ -101,21 +101,21 @@ function handleConfirm() {
   z-index:1000;
 }
 .modal-content {
-  background: white;
+  background: var(--color-surface);
   border-radius: 16px;
   padding: 30px;
   width: 90%;
   max-width: 540px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  box-shadow: var(--shadow-xl);
 }
 h3 {
   font-family: 'SmileySans Oblique', sans-serif;
   font-size: 1.6rem;
-  color: #333;
+  color: var(--color-text-primary);
   margin-bottom: 12px;
   text-align: center;
 }
-.hint { font-size: 0.9rem; color: #6c757d; text-align: center; margin-bottom: 16px; }
+.hint { font-size: 0.9rem; color: var(--color-text-tertiary); text-align: center; margin-bottom: 16px; }
 .role-options {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -124,24 +124,24 @@ h3 {
 }
 .role-option {
   padding: 16px 12px;
-  border: 2px solid #e9ecef;
+  border: 2px solid var(--color-border);
   border-radius: 12px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s;
   position: relative;
 }
-.role-option:hover { border-color: #4facfe; background: rgba(79,172,254,0.05); }
-.role-option.selected { border-color: #28a745; background: rgba(40,167,69,0.08); }
+.role-option:hover { border-color: var(--color-text-link); background: var(--color-info-bg); }
+.role-option.selected { border-color: var(--color-success); background: var(--color-success-bg); }
 .role-option.disabled { opacity: 0.5; pointer-events: none; }
-.role-img { width: 48px; height: 48px; object-fit: contain; margin-bottom: 8px; background: #35373998; border-radius: 8px; padding: 4px; }
+.role-img { width: 48px; height: 48px; object-fit: contain; margin-bottom: 8px; background: var(--color-surface-active); border-radius: 8px; padding: 4px; }
 .role-img.small { width: 32px; height: 32px; }
 .flexible-icons-row { display: flex; justify-content: center; gap: 4px; margin-bottom: 8px; }
-.role-label { display: block; font-weight: 600; font-size: 1rem; color: #333; margin-bottom: 4px; }
-.role-desc { font-size: 0.82rem; color: #6c757d; margin: 0; }
+.role-label { display: block; font-weight: 600; font-size: 1rem; color: var(--color-text-primary); margin-bottom: 4px; }
+.role-desc { font-size: 0.82rem; color: var(--color-text-tertiary); margin: 0; }
 .checkbox {
   width: 22px; height: 22px;
-  border: 2px solid #ced4da;
+  border: 2px solid var(--color-border);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -149,11 +149,11 @@ h3 {
   margin: 8px auto 0;
   transition: all 0.3s;
 }
-.checkbox.checked { background: #28a745; border-color: #28a745; color: white; }
-.selection-info { text-align: center; font-size: 0.9rem; color: #555; margin: 8px 0; }
+.checkbox.checked { background: var(--color-success); border-color: var(--color-success); color: white; }
+.selection-info { text-align: center; font-size: 0.9rem; color: var(--color-text-secondary); margin: 8px 0; }
 .msg { padding: 10px; border-radius: 8px; text-align: center; font-weight: 500; }
-.msg:not(.error) { background: #d4edda; color: #155724; }
-.msg.error { background: #f8d7da; color: #721c24; }
+.msg:not(.error) { background: var(--color-success-bg); color: var(--color-success); }
+.msg.error { background: var(--color-error-bg); color: var(--color-error); }
 .modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 12px; }
 .btn {
   padding: 10px 24px;
@@ -164,8 +164,8 @@ h3 {
   cursor: pointer;
   transition: all 0.3s;
 }
-.cancel { background: #6c757d; color: white; }
-.cancel:hover { background: #5a6268; }
-.confirm { background: #28a745; color: white; }
-.confirm:hover { background: #218838; }
+.cancel { background: var(--color-text-tertiary); color: var(--color-text-inverse); }
+.cancel:hover { background: var(--color-text-secondary); }
+.confirm { background: var(--color-brand); color: var(--color-text-inverse); }
+.confirm:hover { background: var(--color-brand-dark); }
 </style>

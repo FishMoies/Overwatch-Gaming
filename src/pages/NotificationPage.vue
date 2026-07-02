@@ -139,7 +139,7 @@ onMounted(async () => {
 .notification-page {
   padding-top: 76px;
   min-height: 100vh;
-  background: #0f0f1a;
+  background: var(--color-bg);
 }
 
 .notification-container {
@@ -161,22 +161,22 @@ onMounted(async () => {
   gap: 10px;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #e0e0e0;
+  color: var(--color-text-primary);
   font-family: 'SmileySans Oblique', sans-serif;
   margin: 0;
 }
 
 .title-icon {
   display: flex;
-  color: #4facfe;
+  color: var(--color-text-link);
 }
 
 .mark-all-btn {
   padding: 8px 18px;
-  border: 1.5px solid rgba(79, 172, 254, 0.3);
+  border: 1.5px solid var(--color-info-bg);
   border-radius: 8px;
-  background: rgba(79, 172, 254, 0.08);
-  color: rgba(79, 172, 254, 0.8);
+  background: var(--color-info-bg);
+  color: var(--color-text-link);
   font-family: 'MapleMono CN Regular', monospace;
   font-size: 0.85rem;
   font-weight: 600;
@@ -186,15 +186,15 @@ onMounted(async () => {
 
 .mark-all-btn:hover {
   background: rgba(79, 172, 254, 0.15);
-  color: #4facfe;
-  border-color: #4facfe;
+  color: var(--color-text-link);
+  border-color: var(--color-text-link);
 }
 
 .notification-content {
-  background: rgba(20, 25, 45, 0.88);
+  background: var(--color-surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-border-light);
   border-radius: 14px;
   overflow: hidden;
 }
@@ -206,20 +206,20 @@ onMounted(async () => {
 
 .empty-icon {
   margin-bottom: 16px;
-  color: rgba(255, 255, 255, 0.15);
+  color: var(--color-border);
   display: flex;
   justify-content: center;
 }
 
 .empty-state h3 {
   font-size: 1.3rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-tertiary);
   margin-bottom: 8px;
 }
 
 .empty-state p {
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--color-text-tertiary);
   max-width: 360px;
   margin: 0 auto;
   line-height: 1.5;
@@ -235,7 +235,7 @@ onMounted(async () => {
   align-items: center;
   gap: 12px;
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--color-border-light);
   cursor: pointer;
   transition: background 0.2s ease;
 }
@@ -245,11 +245,11 @@ onMounted(async () => {
 }
 
 .notification-item:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-surface-hover);
 }
 
 .notification-item.unread {
-  background: rgba(79, 172, 254, 0.04);
+  background: var(--color-info-bg);
 }
 
 .notification-item.unread:hover {
@@ -265,8 +265,8 @@ onMounted(async () => {
 }
 
 .notif-dot.active {
-  background: #4facfe;
-  box-shadow: 0 0 6px rgba(79, 172, 254, 0.5);
+  background: var(--color-text-link);
+  box-shadow: 0 0 6px var(--color-info-bg);
 }
 
 .notif-body {
@@ -276,12 +276,12 @@ onMounted(async () => {
 
 .notif-message {
   font-size: 0.92rem;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--color-text-secondary);
   line-height: 1.4;
 }
 
 .notif-message strong {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-text-primary);
 }
 
 .notif-icon {
@@ -290,12 +290,12 @@ onMounted(async () => {
 
 .notif-time {
   font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--color-text-tertiary);
   margin-top: 4px;
 }
 
 .notif-arrow {
-  color: rgba(255, 255, 255, 0.2);
+  color: var(--color-border);
   font-size: 1rem;
   flex-shrink: 0;
 }
