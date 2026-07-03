@@ -99,6 +99,11 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/staff',
+    name: 'Staff',
+    component: () => import('../pages/StaffPage.vue')
+  },
+  {
     path: '/adminpower',
     name: 'AdminPanel',
     component: () => import('../pages/AdminPanel.vue'),

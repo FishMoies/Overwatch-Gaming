@@ -26,6 +26,7 @@
       <div class="nav-drawer" :class="{ open: mobileMenuOpen }" @click.self="closeMobileMenu">
         <ul class="nav-links">
           <li><router-link to="/browse" active-class="active" @click="closeMobileMenu">浏览</router-link></li>
+          <li><router-link to="/staff" active-class="active" @click="closeMobileMenu">站务</router-link></li>
           <li v-if="auth.isLoggedIn"><router-link to="/createpost" active-class="active" @click="closeMobileMenu">发帖</router-link></li>
           <li v-if="auth.isLoggedIn"><router-link to="/user" active-class="active" @click="closeMobileMenu">用户面板</router-link></li>
           <li v-if="auth.isAdmin || auth.isTrustedPlayer"><router-link to="/announcements" active-class="active" @click="closeMobileMenu">发布公告</router-link></li>
