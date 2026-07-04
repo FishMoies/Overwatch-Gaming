@@ -7,6 +7,7 @@
 
     <!-- 加载状态 -->
     <div v-if="loading" class="loading-state">加载中...</div>
+    <div v-else-if="error" class="error-state">{{ error }}</div>
 
     <template v-else>
 
@@ -32,7 +33,10 @@
             <div class="staff-info">
               <div class="staff-name">{{ staff.nickname || staff.username }}</div>
               <div class="staff-username" v-if="staff.nickname">@{{ staff.username }}</div>
-              <div class="staff-title-tag">{{ staff.title }}</div>
+              <div class="staff-meta">
+                <span class="staff-title-tag">{{ staff.title }}</span>
+                <span class="sid-badge">#{{ staff.sid }}</span>
+              </div>
               <div class="staff-desc">{{ staff.description }}</div>
               <div v-if="staff.contact" class="staff-contact">📧 {{ staff.contact }}</div>
             </div>
@@ -62,7 +66,10 @@
             <div class="staff-info">
               <div class="staff-name">{{ staff.nickname || staff.username }}</div>
               <div class="staff-username" v-if="staff.nickname">@{{ staff.username }}</div>
-              <div class="staff-title-tag">{{ staff.title }}</div>
+              <div class="staff-meta">
+                <span class="staff-title-tag">{{ staff.title }}</span>
+                <span class="sid-badge">#{{ staff.sid }}</span>
+              </div>
               <div class="staff-term" v-if="staff.term">⏳ {{ staff.term }}</div>
               <div class="staff-desc">{{ staff.description }}</div>
             </div>
@@ -82,19 +89,26 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const loading = ref(true)
+const error = ref('')
 const permanentStaff = ref([])
 const rotatingStaff = ref([])
 
 onMounted(async () => {
   try {
-    const staffRes = await fetch('/staff-data.json')
-    if (staffRes.ok) {
-      const data = await staffRes.json()
+    const res = await fetch('/api/staff')
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: 加载站务数据失败`)
+    }
+    const data = await res.json()
+    if (data.success) {
       permanentStaff.value = data.permanentStaff || []
       rotatingStaff.value = data.rotatingStaff || []
+    } else {
+      error.value = data.message || '加载站务数据失败'
     }
   } catch (e) {
     console.error('加载站务数据失败:', e)
+    error.value = '加载站务数据失败，请稍后重试'
   } finally {
     loading.value = false
   }
@@ -250,6 +264,13 @@ function goToUser(uid) {
   margin-bottom: 4px;
 }
 
+.staff-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
 .staff-title-tag {
   display: inline-block;
   padding: 2px 10px;
@@ -258,7 +279,18 @@ function goToUser(uid) {
   border-radius: var(--radius-full);
   font-size: 0.78rem;
   font-weight: 600;
-  margin-bottom: 6px;
+  font-family: var(--font-mono);
+}
+
+.sid-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--color-surface);
+  color: var(--color-text-tertiary);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 500;
   font-family: var(--font-mono);
 }
 
@@ -296,14 +328,18 @@ function goToUser(uid) {
   font-family: var(--font-mono);
 }
 
-
 /* ========== 通用状态 ========== */
 .loading-state,
-.empty-state {
+.empty-state,
+.error-state {
   text-align: center;
   padding: 40px 20px;
   color: var(--color-text-tertiary);
   font-size: 0.95rem;
+}
+
+.error-state {
+  color: var(--color-danger);
 }
 
 </style>

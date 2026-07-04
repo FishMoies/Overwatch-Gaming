@@ -7,6 +7,9 @@
         <span class="header-subtitle">数据库管理面板</span>
       </div>
       <div class="header-right">
+        <button class="btn btn-staff" @click="goToStaffConfig">
+          📋 站务配置
+        </button>
         <button class="btn btn-refresh" @click="refreshAll" :disabled="loading">
           {{ loading ? '加载中...' : '🔄 刷新' }}
         </button>
@@ -582,6 +585,10 @@ function refreshAll() {
   loadStats()
 }
 
+function goToStaffConfig() {
+  router.push('/admin/staff-config')
+}
+
 function goBack() {
   router.back()
 }
@@ -948,6 +955,15 @@ onMounted(() => {
 
 .btn-close:hover {
   background: #7a3a3a;
+}
+
+.btn-staff {
+  background: #4a3a6a;
+  color: #fff;
+}
+
+.btn-staff:hover {
+  background: #6a4a9a;
 }
 
 .btn-sync {

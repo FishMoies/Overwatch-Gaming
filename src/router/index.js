@@ -104,6 +104,12 @@ const routes = [
     component: () => import('../pages/StaffPage.vue')
   },
   {
+    path: '/admin/staff-config',
+    name: 'StaffConfig',
+    component: () => import('../pages/StaffConfigPage.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true, hideNavBar: true }
+  },
+  {
     path: '/adminpower',
     name: 'AdminPanel',
     component: () => import('../pages/AdminPanel.vue'),
