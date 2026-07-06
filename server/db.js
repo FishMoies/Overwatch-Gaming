@@ -197,6 +197,88 @@ function initSchema() {
     }
   } catch {}
 
+  // 创建站务配置相关表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS staff_positions (
+      sid TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      sort_order INTEGER NOT NULL DEFAULT 0
+    )
+  `)
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS staff_assignments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      uid TEXT NOT NULL,
+      sid TEXT NOT NULL,
+      staff_type TEXT NOT NULL DEFAULT 'permanent',
+      term TEXT NOT NULL DEFAULT '',
+      contact TEXT NOT NULL DEFAULT '',
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+      UNIQUE(uid, sid),
+      FOREIGN KEY (sid) REFERENCES staff_positions(sid) ON DELETE CASCADE
+    )
+  `)
+
+  // 初始化默认 SID 岗位（避免重复插入）
+  const existingPositions = getValue("SELECT COUNT(*) as cnt FROM staff_positions")
+  if (!existingPositions || existingPositions === 0) {
+    db.run("INSERT INTO staff_positions (sid, name, description, sort_order) VALUES ('00', '站务组吉祥物（站长）', '社区最高负责人，统筹全局工作', 0)")
+    db.run("INSERT INTO staff_positions (sid, name, description, sort_order) VALUES ('A1', '站务组技术组长', '网站技术维护、服务器管理与功能开发', 1)")
+    db.run("INSERT INTO staff_positions (sid, name, description, sort_order) VALUES ('K1', '站务组反馈组长', '社区反馈收集、用户问题处理与沟通', 2)")
+    console.log('[DB] 已初始化默认 SID 岗位定义')
+  }
+
+  // 迁移旧版 staff-data.json 到数据库（仅在 staff_assignments 为空时）
+  const existingAssignments = getValue("SELECT COUNT(*) as cnt FROM staff_assignments")
+  if (!existingAssignments || existingAssignments === 0) {
+    try {
+      const staffDataPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'public', 'staff-data.json')
+      if (fs.existsSync(staffDataPath)) {
+        const rawData = fs.readFileSync(staffDataPath, 'utf-8')
+        const staffData = JSON.parse(rawData)
+
+        // 常驻人员
+        if (staffData.permanentStaff && Array.isArray(staffData.permanentStaff)) {
+          for (const s of staffData.permanentStaff) {
+            // 根据 title 推断 SID
+            let sid = '00'
+            if (s.title && s.title.includes('技术组长')) sid = 'A1'
+            else if (s.title && s.title.includes('反馈组长')) sid = 'K1'
+
+            const order = staffData.permanentStaff.indexOf(s)
+            db.run(
+              "INSERT OR IGNORE INTO staff_assignments (uid, sid, staff_type, term, contact, sort_order) VALUES (?, ?, 'permanent', ?, ?, ?)",
+              [s.uid, sid, s.term || '', s.contact || '', order]
+            )
+          }
+        }
+
+        // 特设人员
+        if (staffData.rotatingStaff && Array.isArray(staffData.rotatingStaff)) {
+          for (const s of staffData.rotatingStaff) {
+            let sid = '00'
+            if (s.title && s.title.includes('技术组长')) sid = 'A1'
+            else if (s.title && s.title.includes('反馈组长')) sid = 'K1'
+
+            const order = staffData.rotatingStaff.indexOf(s)
+            db.run(
+              "INSERT OR IGNORE INTO staff_assignments (uid, sid, staff_type, term, contact, sort_order) VALUES (?, ?, 'rotating', ?, ?, ?)",
+              [s.uid, sid, s.term || '', s.contact || '', order]
+            )
+          }
+        }
+
+        console.log('[DB] 已从 staff-data.json 迁移站务数据到数据库')
+      }
+    } catch (e) {
+      console.warn('[DB] 迁移 staff-data.json 时出错（可忽略）:', e.message)
+    }
+  }
+
   // 创建点赞记录表（用于去重）
   db.run(`
     CREATE TABLE IF NOT EXISTS post_likes (

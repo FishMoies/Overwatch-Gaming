@@ -14,12 +14,13 @@ import { announcementsApi } from './announcements.js'
 import { preferenceApi } from './preference.js'
 import { adminApi } from './admin.js'
 import { gitApi } from './git.js'
+import { staffApi } from './staff.js'
 
 // 重新命名导出所有 API 子模块
-export { authApi, postsApi, teamsApi, heroesApi, notificationsApi, announcementsApi, preferenceApi, adminApi, gitApi }
+export { authApi, postsApi, teamsApi, heroesApi, notificationsApi, announcementsApi, preferenceApi, adminApi, gitApi, staffApi }
 
 export default {
   authApi, postsApi, teamsApi, notificationsApi,
   preferenceApi, adminApi, gitApi, heroesApi,
-  announcementsApi
+  announcementsApi, staffApi
 }
