@@ -59,7 +59,8 @@ Overwatch-Gaming/
 │   ├── routes/                # 路由模块（自动扫描注册）
 │   └── utils/                 # 后端工具函数（标识符生成、Banner 等）
 ├── scripts/
-│   └── optimize-assets.cjs    # 资源优化脚本
+│   ├── optimize-assets.cjs    # 资源优化脚本
+│   └── download-font.cjs      # 字体下载脚本
 ├── vite.config.js
 ├── index.html
 ├── package.json

@@ -70,6 +70,7 @@ Overwatch-Gaming/
 │   │   ├── AdminPanel.vue
 │   │   ├── HeroesPage.vue
 │   │   ├── GeneratePage.vue   # 数据生成器（管理员）
+│   │   ├── StaffPage.vue      # 项目成员展示
 │   │   ├── ErrorPage.vue
 │   │   └── HomePages/
 │   │       ├── HeroSection.vue
@@ -149,7 +150,8 @@ Overwatch-Gaming/
 │   ├── middleware/             # 中间件
 │   └── utils/identifiers.js
 ├── scripts/
-│   └── optimize-assets.cjs    # 资源优化脚本
+│   ├── optimize-assets.cjs    # 资源优化脚本（含 WebP 转换）
+│   └── download-font.cjs      # 字体下载脚本
 ├── vite.config.js
 ├── index.html
 ├── package.json

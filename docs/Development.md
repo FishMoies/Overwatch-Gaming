@@ -87,7 +87,7 @@ Overwatch-Gaming/
 ├── src/                       # 前端源代码
 │   ├── App.vue                # 根组件（NavBar 条件渲染、过渡动画、Popup 挂载、@font-face 声明）
 │   ├── main.js                # 应用入口（Pinia + Router + 全局组件注册 + 彩蛋）
-│   ├── router/index.js        # 路由配置（18 条规则 + 守卫 + 滚动行为）
+│   ├── router/index.js        # 路由配置（19 条规则 + 守卫 + 滚动行为）
 │   ├── components/            # 可复用组件
 │   │   ├── NavBar.vue         # 导航栏
 │   │   ├── SearchInput.vue    # 搜索输入框
@@ -96,7 +96,10 @@ Overwatch-Gaming/
 │   │   ├── Popup.vue          # 全站弹窗组件
 │   │   ├── MentionExtension.js  # @提及 TipTap 扩展
 │   │   ├── BilibiliNode.js    # B站视频嵌入 TipTap 节点
-│   │   └── GitNode.js         # Git 仓库嵌入 TipTap 节点
+│   │   ├── GitNode.js         # Git 仓库嵌入 TipTap 节点
+│   │   ├── EmptyState.vue     # 空状态占位组件
+│   │   ├── ErrorState.vue     # 错误状态展示组件
+│   │   └── LoadingSkeleton.vue# 骨架屏加载组件
 │   ├── pages/                 # 页面级组件
 │   │   ├── HomePage.vue       # 首页
 │   │   ├── LoginPage.vue      # 登录页
@@ -111,6 +114,7 @@ Overwatch-Gaming/
 │   │   ├── AdminPanel.vue     # 管理后台
 │   │   ├── HeroesPage.vue     # 英雄图鉴
 │   │   ├── GeneratePage.vue   # 数据生成器（管理员）
+│   │   ├── StaffPage.vue      # 项目成员展示
 │   │   ├── JoinTeamPage.vue   # 加入/创建战队
 │   │   ├── ErrorPage.vue      # 错误页面
 │   │   └── HomePages/         # 首页子组件
@@ -161,7 +165,8 @@ Overwatch-Gaming/
 │   │   ├── post.js            # 帖子状态
 │   │   ├── team.js            # 战队状态
 │   │   ├── popup.js           # 弹窗状态
-│   │   └── notification.js    # 通知状态
+│   │   ├── notification.js    # 通知状态
+│   │   └── theme.js           # 主题切换（暗色/亮色）
 │   ├── utils/                 # 工具函数
 │   │   ├── auth.js            # 认证工具
 │   │   ├── encode.js          # 编码工具
@@ -202,7 +207,8 @@ Overwatch-Gaming/
 │       ├── validators.js      # 输入校验函数
 │       └── banner.js          # ASCII Banner 输出
 ├── scripts/
-│   └── optimize-assets.cjs    # 资源优化脚本
+│   ├── optimize-assets.cjs    # 资源优化脚本（WebP 转换）
+│   └── download-font.cjs      # 字体下载脚本
 ├── docs/                      # 项目文档
 │   ├── API-Reference.md
 │   ├── Architecture.md
@@ -732,7 +738,7 @@ pop.up({ title: '提示', style: 'ow' })
 
 ## 12. Pinia Store 详解
 
-5 个 store 全部使用 Composition API 风格。
+6 个 store 全部使用 Composition API 风格。
 
 ### auth store — `src/stores/auth.js`
 
@@ -890,7 +896,11 @@ ASCII Banner 输出函数。
 
 ### scripts/optimize-assets.cjs
 
-资源优化脚本。
+资源优化脚本，将美术资源（图片、视频等）转换为 WebP 格式以优化加载性能。
+
+### scripts/download-font.cjs
+
+字体下载脚本，从远程源下载 Maple Mono 和 Smiley Sans 字体文件到 `public/` 目录。项目已放弃字体子集化方案，改用完整字体文件。
 
 ---
 

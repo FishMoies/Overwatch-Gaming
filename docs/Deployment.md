@@ -49,6 +49,7 @@ dist/
 │   ├── index-xxx.css
 │   └── ...
 ├── favicon.ico
+├── staff-data.json
 └── public/              # 复制的静态资源
     ├── default-avatar.png
     ├── default-avatar.webp
@@ -56,6 +57,7 @@ dist/
     ├── font-smiley-sans.ttf
     ├── font-maple-mono.ttf
     ├── seed-data.json
+    ├── staff-data.json
     ├── damage/
     ├── support/
     └── tank/

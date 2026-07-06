@@ -806,8 +806,8 @@ GET /api/notifications
       "type": "mention",
       "author": "u-20260101-0000",
       "root": "p-20260607-2841-42",
-      "toUser": 5,
-      "isRead": 0,
+      "to": 5,
+      "isRead": false,
       "title": null,
       "createdAt": "2026-06-07 01:00:00"
     }
@@ -861,6 +861,25 @@ POST /api/notifications
 
 **认证**：必需  
 **频率限制**：每分钟 10 次
+
+**请求体**：
+
+```json
+{
+  "type": "like",
+  "author": "u-20260101-0000",
+  "root": "p-20260607-2841-42",
+  "to": 5,
+  "title": "你的帖子被点赞了"
+}
+```
+
+**通知类型**：
+- `mention` — 被 @提及
+- `comment` — 帖子被回复
+- `like` — 帖子被点赞
+- `system` — 系统通知
+- `custom` — 自定义通知
 
 ---
 

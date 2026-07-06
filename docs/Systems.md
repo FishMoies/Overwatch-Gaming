@@ -575,7 +575,86 @@ POST /api/preference/record → 数据库 preference 递增
 | 前端 API 封装 | `src/services/api/preference.js` |
 | 数据库字段 | `server/db.js`（`users.preference`） |
 
-## 9. 种子数据生成器
+## 9. 主题系统（新增）
+
+项目实现了完整的暗色/亮色主题切换系统，通过 CSS 变量和 Pinia store 实现全局主题管理。
+
+### 架构组件
+
+| 文件 | 职责 |
+|------|------|
+| `src/styles/variables.css` | CSS 变量定义，包含暗色和亮色主题的全部颜色、字体、间距变量 |
+| `src/stores/theme.js` | Pinia 主题状态管理，处理主题切换、系统偏好检测、持久化 |
+| `src/App.vue` | 根组件，通过 `data-theme` 属性应用主题 |
+
+### CSS 变量系统
+
+`variables.css` 定义了完整的 CSS 变量体系，所有组件都应使用这些变量而非硬编码颜色值：
+
+```css
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f7fa;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --accent-color: #4facfe;
+  --border-color: #e0e0e0;
+  /* ... 更多变量 ... */
+}
+
+[data-theme="dark"] {
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --accent-color: #6cb4ee;
+  --border-color: #2a2a4a;
+  /* ... 更多变量 ... */
+}
+```
+
+### 主题切换逻辑
+
+`src/stores/theme.js` 实现了三层主题检测策略：
+
+1. **本地存储优先**：检查 `localStorage` 中保存的用户主题偏好
+2. **系统偏好检测**：如果无本地存储，使用 `prefers-color-scheme` 媒体查询检测系统主题
+3. **默认值**：若无任何偏好，默认使用暗色主题
+
+```js
+// 检测系统偏好
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
+this.isDark = localStorage.getItem('theme') || prefersDark.matches ? 'dark' : 'light'
+```
+
+主题切换时会自动更新 `<html>` 元素的 `data-theme` 属性，所有 CSS 变量随之切换。
+
+### 使用方式
+
+```js
+import { useThemeStore } from '@/stores/theme.js'
+
+const themeStore = useThemeStore()
+
+// 切换主题
+themeStore.toggle()
+
+// 设置指定主题
+themeStore.setTheme('dark')  // 或 'light'
+
+// 获取当前主题
+const current = themeStore.currentTheme  // 'dark' 或 'light'
+```
+
+### 持久化
+
+- 用户选择的主题自动保存到 `localStorage`，键名为 `theme`
+- 页面刷新后自动从 `localStorage` 恢复上次选择的主题
+- 无本地存储时回退到系统偏好检测
+
+---
+
+## 10. 种子数据生成器
 
 项目提供了管理员一键注入测试数据的工具，用于开发、测试和演示环境的数据初始化。
 
